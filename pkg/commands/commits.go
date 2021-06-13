@@ -93,12 +93,7 @@ func (c *GitCommand) CherryPickCommits(commits []*models.Commit) error {
 		todo = "pick " + commit.Sha + " " + commit.Name + "\n" + todo
 	}
 
-	cmd, err := c.PrepareInteractiveRebaseCommand("HEAD", todo, false)
-	if err != nil {
-		return err
-	}
-
-	return c.GetOSCommand().RunPreparedCommand(cmd)
+	return c.RunExecutable(c.PrepareInteractiveRebaseCommand("HEAD", todo, false))
 }
 
 // CreateFixupCommit creates a commit that fixes up a previous commit

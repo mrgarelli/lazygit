@@ -60,8 +60,10 @@ func (gui *Gui) handleCustomCommandKeybinding(customCommand config.CustomCommand
 				return gui.SurfaceError(err)
 			}
 
+			cmdObj := gui.GitCommand.BuildShellCmdObj(cmdStr)
+
 			if customCommand.Subprocess {
-				return gui.runSubprocessWithSuspenseAndRefresh(gui.OSCommand.PrepareShellSubProcess(cmdStr))
+				return gui.runSubprocessWithSuspenseAndRefresh(cmdObj)
 			}
 
 			loadingText := customCommand.LoadingText

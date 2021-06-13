@@ -184,11 +184,13 @@ func createFixture(testPath, actualDir string) error {
 	osCommand := oscommands.NewDummyOSCommand()
 	bashScriptPath := filepath.Join(testPath, "setup.sh")
 
-	cmdObj := &oscommands.CmdObj{
-		Cmd: secureexec.Command("bash", bashScriptPath, actualDir),
-	}
+	err := osCommand.RunExecutable(
+		oscommands.NewCmdObj(
+			secureexec.Command("bash", bashScriptPath, actualDir),
+		),
+	)
 
-	if err := osCommand.RunExecutable(cmdObj); err != nil {
+	if err != nil {
 		return err
 	}
 

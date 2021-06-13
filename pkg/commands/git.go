@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -291,8 +292,10 @@ func BuildGitCmdObj(command string, positionalArgs []string, kwArgs map[string]b
 	return BuildGitCmdObjFromStr(BuildGitCmdStr(command, positionalArgs, kwArgs))
 }
 
+// returns a command object from a command string. Prepends the `git ` part itself so
+// if you want to do `git diff` just pass `diff` as the cmdStr
 func BuildGitCmdObjFromStr(cmdStr string) ICmdObj {
-	cmdObj := &oscommands.CmdObj{CmdStr: GitCmdStr() + " " + cmdStr}
+	cmdObj := oscommands.NewCmdObjFromStr(GitCmdStr() + " " + cmdStr)
 	SetDefaultEnvVars(cmdObj)
 
 	return cmdObj
@@ -307,12 +310,23 @@ func GitVersionCmd() ICmdObj {
 }
 
 func SetDefaultEnvVars(cmdObj ICmdObj) {
-	cmdObj.ToCmd().Env = os.Environ()
+	cmdObj.GetCmd().Env = os.Environ()
 	DisableOptionalLocks(cmdObj)
 }
 
 func DisableOptionalLocks(cmdObj ICmdObj) {
 	cmdObj.AddEnvVars("GIT_OPTIONAL_LOCKS=0")
+}
+
+func (c *GitCommand) SkipEditor(cmdObj ICmdObj) {
+	lazyGitPath := c.GetOSCommand().GetLazygitPath()
+
+	cmdObj.AddEnvVars(
+		"LAZYGIT_CLIENT_COMMAND=EXIT_IMMEDIATELY",
+		"GIT_EDITOR="+lazyGitPath,
+		"EDITOR="+lazyGitPath,
+		"VISUAL="+lazyGitPath,
+	)
 }
 
 func (c *GitCommand) AllBranchesCmdObj() ICmdObj {
@@ -336,4 +350,29 @@ func (c *GitCommand) cleanCustomGitCmdStr(cmdStr string) string {
 // TODO: make this a method on the GitCommand struct
 func GitCmdStr() string {
 	return "git"
+}
+
+// BuildShellCmdObj returns the pointer to a custom command
+func (c *GitCommand) BuildShellCmdObj(command string) ICmdObj {
+	return oscommands.NewCmdObjFromArgs([]string{c.oSCommand.Platform.Shell, c.oSCommand.Platform.ShellArg, command})
+}
+
+func (c *GitCommand) GenericAbortCmdObj() ICmdObj {
+	return c.GenericMergeOrRebaseCmdObj("abort")
+}
+
+func (c *GitCommand) GenericContinueCmdObj() ICmdObj {
+	return c.GenericMergeOrRebaseCmdObj("continue")
+}
+
+func (c *GitCommand) GenericMergeOrRebaseCmdObj(action string) ICmdObj {
+	status := c.WorkingTreeState()
+	switch status {
+	case REBASE_MODE_REBASING:
+		return BuildGitCmdObjFromStr(fmt.Sprintf("rebase --%s", action))
+	case REBASE_MODE_MERGING:
+		return BuildGitCmdObjFromStr(fmt.Sprintf("merge --%s", action))
+	default:
+		panic("expected rebase mode")
+	}
 }

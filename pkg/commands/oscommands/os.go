@@ -142,7 +142,7 @@ func (c *OSCommand) RunExecutable(cmd ICmdObj) error {
 func (c *OSCommand) RunExecutableWithOutput(cmd ICmdObj) (string, error) {
 	c.LogCmd(cmd)
 
-	return sanitisedCommandOutput(cmd.ToCmd().CombinedOutput())
+	return sanitisedCommandOutput(cmd.GetCmd().CombinedOutput())
 }
 
 // ExecutableFromString takes a string like `git status` and returns an executable command for it
@@ -151,20 +151,6 @@ func (c *OSCommand) ExecutableFromString(commandStr string) *exec.Cmd {
 	cmd := c.Command(splitCmd[0], splitCmd[1:]...)
 	cmd.Env = append(os.Environ(), "GIT_OPTIONAL_LOCKS=0")
 	return cmd
-}
-
-// ShellCommandFromString takes a string like `git commit` and returns an executable shell command for it
-func (c *OSCommand) ShellCommandFromString(commandStr string) *exec.Cmd {
-	quotedCommand := ""
-	// Windows does not seem to like quotes around the command
-	if c.Platform.OS == "windows" {
-		quotedCommand = commandStr
-	} else {
-		quotedCommand = c.Quote(commandStr)
-	}
-
-	shellCommand := fmt.Sprintf("%s %s %s", c.Platform.Shell, c.Platform.ShellArg, quotedCommand)
-	return c.ExecutableFromString(shellCommand)
 }
 
 func (c *OSCommand) RunCommandAndParseOutput(cmdObj ICmdObj, output func(string) string) error {
@@ -187,6 +173,23 @@ func (c *OSCommand) CatFile(filename string) (string, error) {
 func (c *OSCommand) RunCommand(formatString string, formatArgs ...interface{}) error {
 	_, err := c.RunCommandWithOutput(formatString, formatArgs...)
 	return err
+}
+
+// RunPreparedCommand takes a pointer to an exec.Cmd and runs it
+// this is useful if you need to give your command some environment variables
+// before running it
+func (c *OSCommand) RunPreparedCommand(cmd *exec.Cmd) error {
+	c.LogExecCmd(cmd)
+	out, err := cmd.CombinedOutput()
+	outString := string(out)
+	c.Log.Info(outString)
+	if err != nil {
+		if len(outString) == 0 {
+			return err
+		}
+		return errors.New(outString)
+	}
+	return nil
 }
 
 // RunShellCommand runs shell commands i.e. 'sh -c <command>'. Good for when you
@@ -248,22 +251,6 @@ func (c *OSCommand) OpenLink(link string) error {
 	command := utils.ResolvePlaceholderString(commandTemplate, templateValues)
 	err := c.RunCommand(command)
 	return err
-}
-
-// PrepareSubProcess iniPrepareSubProcessrocess then tells the Gui to switch to it
-// TODO: see if this needs to exist, given that ExecutableFromString does the same things
-func (c *OSCommand) PrepareSubProcess(cmdName string, commandArgs ...string) *exec.Cmd {
-	cmd := c.Command(cmdName, commandArgs...)
-	if cmd != nil {
-		cmd.Env = append(os.Environ(), "GIT_OPTIONAL_LOCKS=0")
-	}
-	c.LogExecCmd(cmd)
-	return cmd
-}
-
-// PrepareShellSubProcess returns the pointer to a custom command
-func (c *OSCommand) PrepareShellSubProcess(command string) *exec.Cmd {
-	return c.PrepareSubProcess(c.Platform.Shell, c.Platform.ShellArg, command)
 }
 
 // Quote wraps a message in platform-specific quotation marks
@@ -350,23 +337,6 @@ func (c *OSCommand) FileExists(path string) (bool, error) {
 		return false, err
 	}
 	return true, nil
-}
-
-// RunPreparedCommand takes a pointer to an exec.Cmd and runs it
-// this is useful if you need to give your command some environment variables
-// before running it
-func (c *OSCommand) RunPreparedCommand(cmd *exec.Cmd) error {
-	c.LogExecCmd(cmd)
-	out, err := cmd.CombinedOutput()
-	outString := string(out)
-	c.Log.Info(outString)
-	if err != nil {
-		if len(outString) == 0 {
-			return err
-		}
-		return errors.New(outString)
-	}
-	return nil
 }
 
 // GetLazygitPath returns the path of the currently executed file

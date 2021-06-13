@@ -179,7 +179,7 @@ func (c *CommitListBuilder) GetCommits(opts GetCommitsOptions) ([]*models.Commit
 }
 
 // getRebasingCommits obtains the commits that we're in the process of rebasing
-func (c *CommitListBuilder) getRebasingCommits(rebaseMode string) ([]*models.Commit, error) {
+func (c *CommitListBuilder) getRebasingCommits(rebaseMode WorkingTreeState) ([]*models.Commit, error) {
 	switch rebaseMode {
 	case REBASE_MODE_MERGING:
 		return c.getNormalRebasingCommits()

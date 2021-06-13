@@ -55,7 +55,7 @@ type IGitCommand interface {
 	ShowFileDiffCmdObj(from string, to string, reverse bool, path string, plain bool, showRenames bool) ICmdObj
 	DiffEndArgs(from string, to string, reverse bool, path string) string
 	CatFile(fileName string) (string, error)
-	OpenMergeToolCmd() string
+	OpenMergeToolCmdObj() ICmdObj
 	OpenMergeTool() error
 	StageFile(fileName string) error
 	StageAll() error
@@ -75,7 +75,7 @@ type IGitCommand interface {
 	RemoveTrackedFiles(name string) error
 	RemoveUntrackedFiles() error
 	ResetAndClean() error
-	EditFileCmdStr(filename string) (string, error)
+	EditFileCmdObj(filename string) (ICmdObj, error)
 	GetPushToCurrent() bool
 	NewPatchManager() *patch.PatchManager
 	WithSpan(span string) IGitCommand
@@ -86,8 +86,7 @@ type IGitCommand interface {
 	GetOSCommand() *oscommands.OSCommand
 	SkipEditor(cmdObj ICmdObj)
 	AllBranchesCmdObj() ICmdObj
-	PrepareShellSubProcess(command string) ICmdObj
-	PrepareSubProcess(cmdName string, commandArgs ...string) ICmdObj
+	BuildShellCmdObj(command string) ICmdObj
 	GenericAbortCmdObj() ICmdObj
 	GenericContinueCmdObj() ICmdObj
 	GenericMergeOrRebaseCmdObj(action string) ICmdObj
@@ -113,6 +112,9 @@ type IGitCommand interface {
 	SquashAllAboveFixupCommits(sha string) error
 	BeginInteractiveRebaseForCommit(commits []*models.Commit, commitIndex int) error
 	RebaseBranch(branchName string) error
+	AbortRebase() error
+	ContinueRebase() error
+	MergeOrRebase() string
 	GenericMergeOrRebaseAction(commandType string, command string) error
 	AddRemote(name string, url string) error
 	RemoveRemote(name string) error
