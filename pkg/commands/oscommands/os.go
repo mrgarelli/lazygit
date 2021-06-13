@@ -175,34 +175,6 @@ func (c *OSCommand) RunCommand(formatString string, formatArgs ...interface{}) e
 	return err
 }
 
-// RunPreparedCommand takes a pointer to an exec.Cmd and runs it
-// this is useful if you need to give your command some environment variables
-// before running it
-func (c *OSCommand) RunPreparedCommand(cmd *exec.Cmd) error {
-	c.LogExecCmd(cmd)
-	out, err := cmd.CombinedOutput()
-	outString := string(out)
-	c.Log.Info(outString)
-	if err != nil {
-		if len(outString) == 0 {
-			return err
-		}
-		return errors.New(outString)
-	}
-	return nil
-}
-
-// RunShellCommand runs shell commands i.e. 'sh -c <command>'. Good for when you
-// need access to the shell
-func (c *OSCommand) RunShellCommand(command string) error {
-	cmd := c.Command(c.Platform.Shell, c.Platform.ShellArg, command)
-	c.LogExecCmd(cmd)
-
-	_, err := sanitisedCommandOutput(cmd.CombinedOutput())
-
-	return err
-}
-
 // FileType tells us if the file is a file, directory or other
 func (c *OSCommand) FileType(path string) string {
 	fileInfo, err := os.Stat(path)
