@@ -228,22 +228,18 @@ func (c *GitCommand) RunCommand(formatString string, formatArgs ...interface{}) 
 }
 
 func (c *GitCommand) RunExecutable(cmdObj ICmdObj) error {
-	_, err := c.RunExecutableWithOutput(cmdObj)
+	_, err := c.RunCommandWithOutput(cmdObj)
 	return err
 }
 
-func (c *GitCommand) RunExecutableWithOutput(cmdObj ICmdObj) (string, error) {
-	return c.RunCommandWithOutput(cmdObj.ToString())
-}
-
-func (c *GitCommand) RunCommandWithOutput(formatString string, formatArgs ...interface{}) (string, error) {
+func (c *GitCommand) RunCommandWithOutput(cmdObj ICmdObj) (string, error) {
 	// TODO: have this retry logic in other places we run the command
 	waitTime := 50 * time.Millisecond
 	retryCount := 5
 	attempt := 0
 
 	for {
-		output, err := c.GetOSCommand().RunCommandWithOutput(formatString, formatArgs...)
+		output, err := c.GetOSCommand().RunCommandWithOutput(cmdObj)
 		if err != nil {
 			// if we have an error based on the index lock, we should wait a bit and then retry
 			if strings.Contains(output, ".git/index.lock") {
@@ -375,4 +371,8 @@ func (c *GitCommand) GenericMergeOrRebaseCmdObj(action string) ICmdObj {
 	default:
 		panic("expected rebase mode")
 	}
+}
+
+func (c *GitCommand) RunGitCmdFromStr(cmdStr string) error {
+	return c.RunGitCmdFromStr(cmdStr)
 }

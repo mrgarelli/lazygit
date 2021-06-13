@@ -21,14 +21,14 @@ func (c *GitCommand) NewBranch(name string, base string) error {
 // the first returned string is the name and the second is the displayname
 // e.g. name is 123asdf and displayname is '(HEAD detached at 123asdf)'
 func (c *GitCommand) CurrentBranchName() (string, string, error) {
-	branchName, err := c.RunExecutableWithOutput(
+	branchName, err := c.RunCommandWithOutput(
 		BuildGitCmdObj("symbolic-ref", []string{"HEAD"}, map[string]bool{"--short": true}),
 	)
 	if err == nil && branchName != "HEAD\n" {
 		trimmedBranchName := strings.TrimSpace(branchName)
 		return trimmedBranchName, trimmedBranchName, nil
 	}
-	output, err := c.RunExecutableWithOutput(
+	output, err := c.RunCommandWithOutput(
 		BuildGitCmdObj("branch", nil, map[string]bool{"--contains": true}),
 	)
 	if err != nil {
@@ -63,18 +63,18 @@ func (c *GitCommand) Checkout(branch string, options CheckoutOptions) error {
 	cmdObj := BuildGitCmdObj("checkout", []string{branch}, map[string]bool{"--force": options.Force})
 	cmdObj.AddEnvVars(options.EnvVars...)
 
-	return c.GetOSCommand().RunCommandWithOptions(cmdObj)
+	return c.GetOSCommand().RunExecutable(cmdObj)
 }
 
 // GetBranchGraph gets the color-formatted graph of the log for the given branch
 // Currently it limits the result to 100 commits, but when we get async stuff
 // working we can do lazy loading
 func (c *GitCommand) GetBranchGraph(branchName string) (string, error) {
-	return c.GetOSCommand().RunExecutableWithOutput(c.GetBranchGraphCmdObj(branchName))
+	return c.GetOSCommand().RunCommandWithOutput(c.GetBranchGraphCmdObj(branchName))
 }
 
 func (c *GitCommand) GetUpstreamForBranch(branchName string) (string, error) {
-	output, err := c.RunCommandWithOutput("git rev-parse --abbrev-ref --symbolic-full-name %s@{u}", branchName)
+	output, err := c.RunCommandWithOutput(BuildGitCmdObjFromStr(fmt.Sprintf("rev-parse --abbrev-ref --symbolic-full-name %s@{u}", branchName)))
 	return strings.TrimSpace(output), err
 }
 
@@ -110,16 +110,23 @@ func (c *GitCommand) GetBranchUpstreamDifferenceCount(branchName string) (string
 // GetCommitDifferences checks how many pushables/pullables there are for the
 // current branch
 func (c *GitCommand) GetCommitDifferences(from, to string) (string, string) {
-	command := "git rev-list %s..%s --count"
-	pushableCount, err := c.GetOSCommand().RunCommandWithOutput(command, to, from)
+	pushableCount, err := c.GetOSCommand().RunCommandWithOutput(
+		c.GetCommitDifferenceCmdObj(to, from),
+	)
 	if err != nil {
 		return "?", "?"
 	}
-	pullableCount, err := c.GetOSCommand().RunCommandWithOutput(command, from, to)
+	pullableCount, err := c.GetOSCommand().RunCommandWithOutput(
+		c.GetCommitDifferenceCmdObj(from, to),
+	)
 	if err != nil {
 		return "?", "?"
 	}
 	return strings.TrimSpace(pushableCount), strings.TrimSpace(pullableCount)
+}
+
+func (c *GitCommand) GetCommitDifferenceCmdObj(from string, to string) ICmdObj {
+	return BuildGitCmdObjFromStr(fmt.Sprintf("rev-list %s..%s --count", from, to))
 }
 
 type MergeOpts struct {

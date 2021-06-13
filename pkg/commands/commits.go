@@ -22,7 +22,7 @@ func (c *GitCommand) ResetToCommit(sha string, strength string, options ResetToC
 	cmdObj := BuildGitCmdObj("reset", []string{sha}, map[string]bool{"--" + strength: true})
 	cmdObj.AddEnvVars(options.EnvVars...)
 
-	return c.GetOSCommand().RunCommandWithOptions(cmdObj)
+	return c.GetOSCommand().RunExecutable(cmdObj)
 }
 
 func (c *GitCommand) CommitCmdStr(message string, flags string) string {
@@ -42,29 +42,32 @@ func (c *GitCommand) CommitCmdStr(message string, flags string) string {
 
 // Get the subject of the HEAD commit
 func (c *GitCommand) GetHeadCommitMessage() (string, error) {
-	cmdStr := "git log -1 --pretty=%s"
-	message, err := c.GetOSCommand().RunCommandWithOutput(cmdStr)
+	cmdObj := BuildGitCmdObjFromStr("log -1 --pretty=%s")
+	message, err := c.GetOSCommand().RunCommandWithOutput(cmdObj)
 	return strings.TrimSpace(message), err
 }
 
 func (c *GitCommand) GetCommitMessage(commitSha string) (string, error) {
-	cmdStr := "git rev-list --format=%B --max-count=1 " + commitSha
-	messageWithHeader, err := c.GetOSCommand().RunCommandWithOutput(cmdStr)
+	messageWithHeader, err := c.GetOSCommand().RunCommandWithOutput(
+		BuildGitCmdObjFromStr("rev-list --format=%B --max-count=1 " + commitSha),
+	)
 	message := strings.Join(strings.SplitAfter(messageWithHeader, "\n")[1:], "\n")
 	return strings.TrimSpace(message), err
 }
 
 func (c *GitCommand) GetCommitMessageFirstLine(sha string) (string, error) {
-	return c.RunCommandWithOutput("git show --no-patch --pretty=format:%%s %s", sha)
+	return c.RunCommandWithOutput(
+		BuildGitCmdObjFromStr(fmt.Sprintf("show --no-patch --pretty=format:%%s %s", sha)),
+	)
 }
 
 // AmendHead amends HEAD with whatever is staged in your working tree
 func (c *GitCommand) AmendHead() error {
-	return c.GetOSCommand().RunCommand(c.AmendHeadCmdStr())
+	return c.GetOSCommand().RunExecutable(c.AmendHeadCmdObj())
 }
 
-func (c *GitCommand) AmendHeadCmdStr() string {
-	return "git commit --amend --no-edit --allow-empty"
+func (c *GitCommand) AmendHeadCmdObj() ICmdObj {
+	return BuildGitCmdObjFromStr("commit --amend --no-edit --allow-empty")
 }
 
 func (c *GitCommand) ShowCmdObj(sha string, filterPath string) ICmdObj {

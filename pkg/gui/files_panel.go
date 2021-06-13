@@ -449,9 +449,9 @@ func (gui *Gui) handleAmendCommitPress() error {
 		Title:  strings.Title(gui.Tr.AmendLastCommit),
 		Prompt: gui.Tr.SureToAmend,
 		HandleConfirm: func() error {
-			cmdStr := gui.GitCommand.AmendHeadCmdStr()
-			gui.OnRunCommand(oscommands.NewCmdLogEntry(cmdStr, gui.Tr.Spans.AmendCommit, true))
-			return gui.withGpgHandling(cmdStr, gui.Tr.AmendingStatus, nil)
+			cmdObj := gui.GitCommand.AmendHeadCmdObj()
+			gui.OnRunCommand(oscommands.NewCmdLogEntryFromCmdObj(cmdObj, gui.Tr.Spans.AmendCommit))
+			return gui.withGpgHandling(cmdObj.ToString(), gui.Tr.AmendingStatus, nil)
 		},
 	})
 }
