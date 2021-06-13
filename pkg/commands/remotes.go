@@ -24,7 +24,7 @@ func (c *GitCommand) UpdateRemoteUrl(remoteName string, updatedUrl string) error
 
 func (c *GitCommand) DeleteRemoteBranch(remoteName string, branchName string) error {
 	return c.RunCommandWithCredentialsHandling(
-		BuildGitCmdObjFromStr(fmt.Sprintf("push %s --delete %s", remoteName, branchName))
+		BuildGitCmdObjFromStr(fmt.Sprintf("push %s --delete %s", remoteName, branchName)),
 	)
 }
 
