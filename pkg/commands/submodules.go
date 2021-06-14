@@ -79,8 +79,7 @@ func (c *GitCommand) SubmoduleReset(submodule *models.SubmoduleConfig) error {
 }
 
 func (c *GitCommand) SubmoduleUpdateAll() error {
-	// not doing an --init here because the user probably doesn't want that
-	return c.RunGitCmdFromStr("submodule update --force")
+
 }
 
 func (c *GitCommand) SubmoduleDelete(submodule *models.SubmoduleConfig) error {
@@ -151,6 +150,7 @@ func (c *GitCommand) SubmoduleBulkUpdateCmdObj() ICmdObj {
 }
 
 func (c *GitCommand) SubmoduleForceBulkUpdateCmdObj() ICmdObj {
+	// not doing an --init here because the user probably doesn't want that
 	return BuildGitCmdObjFromStr("submodule update --force")
 }
 
@@ -165,5 +165,5 @@ func (c *GitCommand) ResetSubmodules(submodules []*models.SubmoduleConfig) error
 		}
 	}
 
-	return c.SubmoduleUpdateAll()
+	return c.RunExecutable(c.SubmoduleForceBulkUpdateCmdObj())
 }
