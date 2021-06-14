@@ -41,6 +41,6 @@ func (c *GitCommand) CheckRemoteBranchExists(branch *models.Branch) bool {
 }
 
 // GetRemoteURL returns current repo remote url
-func (c *GitCommand) GetRmoteURL() string {
+func (c *GitCommand) GetRemoteURL() string {
 	return c.GetConfigValue("remote.origin.url")
 }

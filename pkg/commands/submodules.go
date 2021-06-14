@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/jesseduffield/lazygit/pkg/commands/models"
+	. "github.com/jesseduffield/lazygit/pkg/commands/types"
 )
 
 // .gitmodules looks like this:
@@ -79,7 +80,7 @@ func (c *GitCommand) SubmoduleReset(submodule *models.SubmoduleConfig) error {
 
 func (c *GitCommand) SubmoduleUpdateAll() error {
 	// not doing an --init here because the user probably doesn't want that
-	return c.RunCommand("git submodule update --force")
+	return c.RunGitCmdFromStr("submodule update --force")
 }
 
 func (c *GitCommand) SubmoduleDelete(submodule *models.SubmoduleConfig) error {
@@ -110,11 +111,13 @@ func (c *GitCommand) SubmoduleDelete(submodule *models.SubmoduleConfig) error {
 }
 
 func (c *GitCommand) SubmoduleAdd(name string, path string, url string) error {
-	return c.GetOSCommand().RunCommand(
-		"git submodule add --force --name %s -- %s %s ",
-		c.GetOSCommand().Quote(name),
-		c.GetOSCommand().Quote(url),
-		c.GetOSCommand().Quote(path),
+	return c.RunGitCmdFromStr(
+		fmt.Sprintf(
+			"submodule add --force --name %s -- %s %s ",
+			c.GetOSCommand().Quote(name),
+			c.GetOSCommand().Quote(url),
+			c.GetOSCommand().Quote(path),
+		),
 	)
 }
 
@@ -139,20 +142,20 @@ func (c *GitCommand) SubmoduleUpdate(path string) error {
 	return c.RunGitCmdFromStr(fmt.Sprintf("submodule update --init %s", path))
 }
 
-func (c *GitCommand) SubmoduleBulkInitCmdStr() string {
-	return "git submodule init"
+func (c *GitCommand) SubmoduleBulkInitCmdObj() ICmdObj {
+	return BuildGitCmdObjFromStr("submodule init")
 }
 
-func (c *GitCommand) SubmoduleBulkUpdateCmdStr() string {
-	return "git submodule update"
+func (c *GitCommand) SubmoduleBulkUpdateCmdObj() ICmdObj {
+	return BuildGitCmdObjFromStr("submodule update")
 }
 
-func (c *GitCommand) SubmoduleForceBulkUpdateCmdStr() string {
-	return "git submodule update --force"
+func (c *GitCommand) SubmoduleForceBulkUpdateCmdObj() ICmdObj {
+	return BuildGitCmdObjFromStr("submodule update --force")
 }
 
-func (c *GitCommand) SubmoduleBulkDeinitCmdStr() string {
-	return "git submodule deinit --all --force"
+func (c *GitCommand) SubmoduleBulkDeinitCmdObj() ICmdObj {
+	return BuildGitCmdObjFromStr("submodule deinit --all --force")
 }
 
 func (c *GitCommand) ResetSubmodules(submodules []*models.SubmoduleConfig) error {

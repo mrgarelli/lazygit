@@ -138,36 +138,36 @@ type MergeOpts struct {
 func (c *GitCommand) Merge(branchName string, opts MergeOpts) error {
 	mergeArgs := c.config.GetUserConfig().Git.Merging.Args
 
-	command := fmt.Sprintf("git merge --no-edit %s %s", mergeArgs, branchName)
+	cmdStr := fmt.Sprintf("merge --no-edit %s %s", mergeArgs, branchName)
 	if opts.FastForwardOnly {
-		command = fmt.Sprintf("%s --ff-only", command)
+		cmdStr = fmt.Sprintf("%s --ff-only", cmdStr)
 	}
 
-	return c.GetOSCommand().RunCommand(command)
+	return c.RunGitCmdFromStr(cmdStr)
 }
 
 // AbortMerge abort merge
 func (c *GitCommand) AbortMerge() error {
-	return c.RunCommand("git merge --abort")
+	return c.RunGitCmdFromStr("merge --abort")
 }
 
 func (c *GitCommand) IsHeadDetached() bool {
-	err := c.RunCommand("git symbolic-ref -q HEAD")
+	err := c.RunGitCmdFromStr("symbolic-ref -q HEAD")
 	return err != nil
 }
 
 // ResetHardHead runs `git reset --hard`
 func (c *GitCommand) ResetHard(ref string) error {
-	return c.RunCommand("git reset --hard " + ref)
+	return c.RunGitCmdFromStr("reset --hard " + ref)
 }
 
 // ResetSoft runs `git reset --soft HEAD`
 func (c *GitCommand) ResetSoft(ref string) error {
-	return c.RunCommand("git reset --soft " + ref)
+	return c.RunGitCmdFromStr("reset --soft " + ref)
 }
 
 func (c *GitCommand) ResetMixed(ref string) error {
-	return c.RunCommand("git reset --mixed " + ref)
+	return c.RunGitCmdFromStr("reset --mixed " + ref)
 }
 
 func (c *GitCommand) RenameBranch(oldName string, newName string) error {

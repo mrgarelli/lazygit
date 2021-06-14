@@ -25,7 +25,7 @@ func (c *GitCommand) ResetToCommit(sha string, strength string, options ResetToC
 	return c.GetOSCommand().RunExecutable(cmdObj)
 }
 
-func (c *GitCommand) CommitCmdStr(message string, flags string) string {
+func (c *GitCommand) CommitCmdObj(message string, flags string) ICmdObj {
 	splitMessage := strings.Split(message, "\n")
 	lineArgs := ""
 	for _, line := range splitMessage {
@@ -37,7 +37,9 @@ func (c *GitCommand) CommitCmdStr(message string, flags string) string {
 		flagsStr = fmt.Sprintf(" %s", flags)
 	}
 
-	return fmt.Sprintf("git commit%s%s", flagsStr, lineArgs)
+	cmdStr := fmt.Sprintf("commit%s%s", flagsStr, lineArgs)
+
+	return BuildGitCmdObjFromStr(cmdStr)
 }
 
 // Get the subject of the HEAD commit

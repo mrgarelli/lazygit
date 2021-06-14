@@ -159,9 +159,8 @@ func (c *OSCommand) OpenFile(filename string) error {
 		"filename": c.Quote(filename),
 	}
 
-	command := utils.ResolvePlaceholderString(commandTemplate, templateValues)
-	err := c.RunCommand(command)
-	return err
+	cmdStr := utils.ResolvePlaceholderString(commandTemplate, templateValues)
+	return c.RunExecutable(NewCmdObjFromStr(cmdStr))
 }
 
 // OpenLink opens a file with the given
@@ -172,9 +171,8 @@ func (c *OSCommand) OpenLink(link string) error {
 		"link": c.Quote(link),
 	}
 
-	command := utils.ResolvePlaceholderString(commandTemplate, templateValues)
-	err := c.RunCommand(command)
-	return err
+	cmdStr := utils.ResolvePlaceholderString(commandTemplate, templateValues)
+	return c.RunExecutable(NewCmdObjFromStr(cmdStr))
 }
 
 // Quote wraps a message in platform-specific quotation marks

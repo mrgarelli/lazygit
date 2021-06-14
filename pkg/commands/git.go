@@ -221,12 +221,9 @@ func findDotGitDir(stat func(string) (os.FileInfo, error), readFile func(filenam
 }
 
 func VerifyInGitRepo(osCommand *oscommands.OSCommand) error {
-	return osCommand.RunCommand("git rev-parse --git-dir")
-}
-
-func (c *GitCommand) RunCommand(formatString string, formatArgs ...interface{}) error {
-	_, err := c.RunCommandWithOutput(formatString, formatArgs...)
-	return err
+	return osCommand.RunExecutable(
+		BuildGitCmdObjFromStr("rev-parse --git-dir"),
+	)
 }
 
 func (c *GitCommand) RunExecutable(cmdObj ICmdObj) error {
@@ -294,6 +291,13 @@ func BuildGitCmdObj(command string, positionalArgs []string, kwArgs map[string]b
 // if you want to do `git diff` just pass `diff` as the cmdStr
 func BuildGitCmdObjFromStr(cmdStr string) ICmdObj {
 	cmdObj := oscommands.NewCmdObjFromStr(GitCmdStr() + " " + cmdStr)
+	SetDefaultEnvVars(cmdObj)
+
+	return cmdObj
+}
+
+func BuildGitCmdObjFromArgs(args []string) ICmdObj {
+	cmdObj := oscommands.NewCmdObjFromArgs(append([]string{GitCmdStr()}, args...))
 	SetDefaultEnvVars(cmdObj)
 
 	return cmdObj
