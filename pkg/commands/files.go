@@ -28,7 +28,7 @@ func (c *GitCommand) OpenMergeTool() error {
 
 // StageFile stages a file
 func (c *GitCommand) StageFile(fileName string) error {
-	return c.RunCommand("git add -- %s", c.GetOSCommand().Quote(fileName))
+	return c.RunGitCmdFromStr(fmt.Sprintf("add -- %s", c.GetOSCommand().Quote(fileName)))
 }
 
 // StageAll stages all files

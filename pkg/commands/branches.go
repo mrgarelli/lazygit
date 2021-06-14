@@ -22,14 +22,15 @@ func (c *GitCommand) NewBranch(name string, base string) error {
 // e.g. name is 123asdf and displayname is '(HEAD detached at 123asdf)'
 func (c *GitCommand) CurrentBranchName() (string, string, error) {
 	branchName, err := c.RunCommandWithOutput(
-		BuildGitCmdObj("symbolic-ref", []string{"HEAD"}, map[string]bool{"--short": true}),
+		BuildGitCmdObjFromStr("symbolic-ref --short HEAD"),
 	)
+
 	if err == nil && branchName != "HEAD\n" {
 		trimmedBranchName := strings.TrimSpace(branchName)
 		return trimmedBranchName, trimmedBranchName, nil
 	}
 	output, err := c.RunCommandWithOutput(
-		BuildGitCmdObj("branch", nil, map[string]bool{"--contains": true}),
+		BuildGitCmdObjFromStr("branch --contains"),
 	)
 	if err != nil {
 		return "", "", err
