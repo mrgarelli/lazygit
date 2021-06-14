@@ -8,7 +8,7 @@ import (
 	"github.com/jesseduffield/lazygit/pkg/utils"
 )
 
-func (c *GitCommand) ConfiguredPager() string {
+func (c *Git) ConfiguredPager() string {
 	if os.Getenv("GIT_PAGER") != "" {
 		return os.Getenv("GIT_PAGER")
 	}
@@ -23,7 +23,7 @@ func (c *GitCommand) ConfiguredPager() string {
 	return strings.Split(trimmedOutput, "\n")[0]
 }
 
-func (c *GitCommand) GetPager(width int) string {
+func (c *Git) GetPager(width int) string {
 	useConfig := c.config.GetUserConfig().Git.Paging.UseConfig
 	if useConfig {
 		pager := c.ConfiguredPager()
@@ -38,18 +38,18 @@ func (c *GitCommand) GetPager(width int) string {
 	return utils.ResolvePlaceholderString(pagerTemplate, templateValues)
 }
 
-func (c *GitCommand) colorArg() string {
+func (c *Git) colorArg() string {
 	return c.config.GetUserConfig().Git.Paging.ColorArg
 }
 
-func (c *GitCommand) GetConfigValue(key string) string {
+func (c *Git) GetConfigValue(key string) string {
 	output, _ := c.getGitConfigValue(key)
 	return output
 }
 
 // UsingGpg tells us whether the user has gpg enabled so that we can know
 // whether we need to run a subprocess to allow them to enter their password
-func (c *GitCommand) UsingGpg() bool {
+func (c *Git) UsingGpg() bool {
 	overrideGpg := c.config.GetUserConfig().Git.OverrideGpg
 	if overrideGpg {
 		return false
@@ -61,7 +61,7 @@ func (c *GitCommand) UsingGpg() bool {
 	return value == "true" || value == "1" || value == "yes" || value == "on"
 }
 
-func (c *GitCommand) FindRemoteForBranchInConfig(branchName string) (string, error) {
+func (c *Git) FindRemoteForBranchInConfig(branchName string) (string, error) {
 	conf, err := c.repo.Config()
 	if err != nil {
 		return "", err

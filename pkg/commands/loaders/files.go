@@ -1,39 +1,54 @@
-package commands
+package loaders
 
 import (
 	"fmt"
 	"strings"
 
 	"github.com/jesseduffield/lazygit/pkg/commands/models"
+	"github.com/jesseduffield/lazygit/pkg/commands/oscommands"
+	. "github.com/jesseduffield/lazygit/pkg/commands/types"
 	"github.com/jesseduffield/lazygit/pkg/utils"
+	"github.com/sirupsen/logrus"
 )
 
 const RENAME_SEPARATOR = " -> "
 
 // GetStatusFiles git status files
-type GetStatusFileOptions struct {
+type LoadStatusFilesOpts struct {
 	NoRenames bool
 }
 
-func (c *GitCommand) GetStatusFiles(opts GetStatusFileOptions) []*models.File {
-	// check if config wants us ignoring untracked files
-	untrackedFilesSetting := c.GetConfigValue("status.showUntrackedFiles")
+type StatusFileLoaderProps interface {
+	GetConfigValue(string) string
+	GetLog() *logrus.Entry
+	GetOS() *oscommands.OS
+	RunWithOutput(ICmdObj) (string, error)
+	BuildGitCmdObjFromStr(string) ICmdObj
+}
 
-	if untrackedFilesSetting == "" {
-		untrackedFilesSetting = "all"
-	}
-	untrackedFilesArg := fmt.Sprintf("--untracked-files=%s", untrackedFilesSetting)
+type StatusFileLoader struct {
+	StatusFileLoaderProps
+}
 
-	statusOutput, err := c.GitStatus(GitStatusOptions{NoRenames: opts.NoRenames, UntrackedFilesArg: untrackedFilesArg})
+func NewStatusFileLoader(p StatusFileLoaderProps) *StatusFileLoader {
+	return &StatusFileLoader{p}
+}
+
+func (c *StatusFileLoader) Load(opts LoadStatusFilesOpts) []*models.File {
+	cmdObj := c.buildCmdObj(opts)
+
+	status, err := c.RunWithOutput(cmdObj)
 	if err != nil {
-		c.log.Error(err)
+		c.GetLog().Error(err)
+		return []*models.File{}
 	}
-	statusStrings := utils.SplitLines(statusOutput)
+
+	statusStrings := c.cleanGitStatus(status)
 	files := []*models.File{}
 
 	for _, statusString := range statusStrings {
 		if strings.HasPrefix(statusString, "warning") {
-			c.log.Warningf("warning when calling git status: %s", statusString)
+			c.GetLog().Warningf("warning when calling git status: %s", statusString)
 			continue
 		}
 		change := statusString[0:2]
@@ -62,7 +77,7 @@ func (c *GitCommand) GetStatusFiles(opts GetStatusFileOptions) []*models.File {
 			Added:                   unstagedChange == "A" || untracked,
 			HasMergeConflicts:       hasMergeConflicts,
 			HasInlineMergeConflicts: hasInlineMergeConflicts,
-			Type:                    c.GetOSCommand().FileType(name),
+			Type:                    c.GetOS().FileType(name),
 			ShortStatus:             change,
 		}
 		files = append(files, file)
@@ -71,23 +86,24 @@ func (c *GitCommand) GetStatusFiles(opts GetStatusFileOptions) []*models.File {
 	return files
 }
 
-// GitStatus returns the plaintext short status of the repo
-type GitStatusOptions struct {
-	NoRenames         bool
-	UntrackedFilesArg string
-}
+func (c *StatusFileLoader) buildCmdObj(opts LoadStatusFilesOpts) ICmdObj {
+	// check if config wants us ignoring untracked files
+	untrackedFilesSetting := c.GetConfigValue("status.showUntrackedFiles")
 
-func (c *GitCommand) GitStatus(opts GitStatusOptions) (string, error) {
+	if untrackedFilesSetting == "" {
+		untrackedFilesSetting = "all"
+	}
+	untrackedFilesArg := fmt.Sprintf("--untracked-files=%s", untrackedFilesSetting)
+
 	noRenamesFlag := ""
 	if opts.NoRenames {
 		noRenamesFlag = "--no-renames"
 	}
 
-	statusLines, err := c.RunWithOutput(BuildGitCmdObjFromStr(fmt.Sprintf("status %s --porcelain -z %s", opts.UntrackedFilesArg, noRenamesFlag)))
-	if err != nil {
-		return "", err
-	}
+	return c.BuildGitCmdObjFromStr(fmt.Sprintf("status %s --porcelain -z %s", untrackedFilesArg, noRenamesFlag))
+}
 
+func (c *StatusFileLoader) cleanGitStatus(statusLines string) []string {
 	splitLines := strings.Split(statusLines, "\x00")
 	// if a line starts with 'R' then the next line is the original file.
 	for i := 0; i < len(splitLines)-1; i++ {
@@ -100,5 +116,5 @@ func (c *GitCommand) GitStatus(opts GitStatusOptions) (string, error) {
 		}
 	}
 
-	return strings.Join(splitLines, "\n"), nil
+	return utils.SplitLines(strings.Join(splitLines, "\n"))
 }

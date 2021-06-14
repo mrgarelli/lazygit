@@ -711,15 +711,15 @@ type FakeIGitCommand struct {
 		result1 string
 		result2 error
 	}
-	GetOSCommandStub        func() *oscommands.OSCommand
+	GetOSCommandStub        func() *oscommands.OS
 	getOSCommandMutex       sync.RWMutex
 	getOSCommandArgsForCall []struct {
 	}
 	getOSCommandReturns struct {
-		result1 *oscommands.OSCommand
+		result1 *oscommands.OS
 	}
 	getOSCommandReturnsOnCall map[int]struct {
-		result1 *oscommands.OSCommand
+		result1 *oscommands.OS
 	}
 	GetPagerStub        func(int) string
 	getPagerMutex       sync.RWMutex
@@ -1648,16 +1648,16 @@ type FakeIGitCommand struct {
 	usingGpgReturnsOnCall map[int]struct {
 		result1 bool
 	}
-	WithSpanStub        func(string) commands.IGitCommand
+	WithSpanStub        func(string) commands.IGit
 	withSpanMutex       sync.RWMutex
 	withSpanArgsForCall []struct {
 		arg1 string
 	}
 	withSpanReturns struct {
-		result1 commands.IGitCommand
+		result1 commands.IGit
 	}
 	withSpanReturnsOnCall map[int]struct {
-		result1 commands.IGitCommand
+		result1 commands.IGit
 	}
 	WorkingTreeStateStub        func() commands.WorkingTreeState
 	workingTreeStateMutex       sync.RWMutex
@@ -5298,7 +5298,7 @@ func (fake *FakeIGitCommand) GetHeadCommitMessageReturnsOnCall(i int, result1 st
 	}{result1, result2}
 }
 
-func (fake *FakeIGitCommand) GetOSCommand() *oscommands.OSCommand {
+func (fake *FakeIGitCommand) GetOSCommand() *oscommands.OS {
 	fake.getOSCommandMutex.Lock()
 	ret, specificReturn := fake.getOSCommandReturnsOnCall[len(fake.getOSCommandArgsForCall)]
 	fake.getOSCommandArgsForCall = append(fake.getOSCommandArgsForCall, struct {
@@ -5322,32 +5322,32 @@ func (fake *FakeIGitCommand) GetOSCommandCallCount() int {
 	return len(fake.getOSCommandArgsForCall)
 }
 
-func (fake *FakeIGitCommand) GetOSCommandCalls(stub func() *oscommands.OSCommand) {
+func (fake *FakeIGitCommand) GetOSCommandCalls(stub func() *oscommands.OS) {
 	fake.getOSCommandMutex.Lock()
 	defer fake.getOSCommandMutex.Unlock()
 	fake.GetOSCommandStub = stub
 }
 
-func (fake *FakeIGitCommand) GetOSCommandReturns(result1 *oscommands.OSCommand) {
+func (fake *FakeIGitCommand) GetOSCommandReturns(result1 *oscommands.OS) {
 	fake.getOSCommandMutex.Lock()
 	defer fake.getOSCommandMutex.Unlock()
 	fake.GetOSCommandStub = nil
 	fake.getOSCommandReturns = struct {
-		result1 *oscommands.OSCommand
+		result1 *oscommands.OS
 	}{result1}
 }
 
-func (fake *FakeIGitCommand) GetOSCommandReturnsOnCall(i int, result1 *oscommands.OSCommand) {
+func (fake *FakeIGitCommand) GetOSCommandReturnsOnCall(i int, result1 *oscommands.OS) {
 	fake.getOSCommandMutex.Lock()
 	defer fake.getOSCommandMutex.Unlock()
 	fake.GetOSCommandStub = nil
 	if fake.getOSCommandReturnsOnCall == nil {
 		fake.getOSCommandReturnsOnCall = make(map[int]struct {
-			result1 *oscommands.OSCommand
+			result1 *oscommands.OS
 		})
 	}
 	fake.getOSCommandReturnsOnCall[i] = struct {
-		result1 *oscommands.OSCommand
+		result1 *oscommands.OS
 	}{result1}
 }
 
@@ -10188,7 +10188,7 @@ func (fake *FakeIGitCommand) UsingGpgReturnsOnCall(i int, result1 bool) {
 	}{result1}
 }
 
-func (fake *FakeIGitCommand) WithSpan(arg1 string) commands.IGitCommand {
+func (fake *FakeIGitCommand) WithSpan(arg1 string) commands.IGit {
 	fake.withSpanMutex.Lock()
 	ret, specificReturn := fake.withSpanReturnsOnCall[len(fake.withSpanArgsForCall)]
 	fake.withSpanArgsForCall = append(fake.withSpanArgsForCall, struct {
@@ -10213,7 +10213,7 @@ func (fake *FakeIGitCommand) WithSpanCallCount() int {
 	return len(fake.withSpanArgsForCall)
 }
 
-func (fake *FakeIGitCommand) WithSpanCalls(stub func(string) commands.IGitCommand) {
+func (fake *FakeIGitCommand) WithSpanCalls(stub func(string) commands.IGit) {
 	fake.withSpanMutex.Lock()
 	defer fake.withSpanMutex.Unlock()
 	fake.WithSpanStub = stub
@@ -10226,26 +10226,26 @@ func (fake *FakeIGitCommand) WithSpanArgsForCall(i int) string {
 	return argsForCall.arg1
 }
 
-func (fake *FakeIGitCommand) WithSpanReturns(result1 commands.IGitCommand) {
+func (fake *FakeIGitCommand) WithSpanReturns(result1 commands.IGit) {
 	fake.withSpanMutex.Lock()
 	defer fake.withSpanMutex.Unlock()
 	fake.WithSpanStub = nil
 	fake.withSpanReturns = struct {
-		result1 commands.IGitCommand
+		result1 commands.IGit
 	}{result1}
 }
 
-func (fake *FakeIGitCommand) WithSpanReturnsOnCall(i int, result1 commands.IGitCommand) {
+func (fake *FakeIGitCommand) WithSpanReturnsOnCall(i int, result1 commands.IGit) {
 	fake.withSpanMutex.Lock()
 	defer fake.withSpanMutex.Unlock()
 	fake.WithSpanStub = nil
 	if fake.withSpanReturnsOnCall == nil {
 		fake.withSpanReturnsOnCall = make(map[int]struct {
-			result1 commands.IGitCommand
+			result1 commands.IGit
 		})
 	}
 	fake.withSpanReturnsOnCall[i] = struct {
-		result1 commands.IGitCommand
+		result1 commands.IGit
 	}{result1}
 }
 
@@ -10740,4 +10740,4 @@ func (fake *FakeIGitCommand) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ commands.IGitCommand = new(FakeIGitCommand)
+var _ commands.IGit = new(FakeIGitCommand)

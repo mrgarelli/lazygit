@@ -1,4 +1,4 @@
-// hmm auto-generated for testing purposes. To re-generate, do: <ifacemaker --file="pkg/commands/*.go" --struct=GitCommand --iface=IGitCommand --pkg=commands -o pkg/commands/igitcommand.go --doc false --comment="$(cat pkg/commands/auto-generation-message.txt)"> from the root directory of the repo and fix up any missing imports
+// hmm auto-generated for testing purposes. To re-generate, do: <ifacemaker --file="pkg/commands/*.go" --struct=Git --iface=IGit --pkg=commands -o pkg/commands/igitcommand.go --doc false --comment="$(cat pkg/commands/auto-generation-message.txt)"> from the root directory of the repo and fix up any missing imports
 
 package commands
 
@@ -8,10 +8,11 @@ import (
 	"github.com/jesseduffield/lazygit/pkg/commands/patch"
 	. "github.com/jesseduffield/lazygit/pkg/commands/types"
 	"github.com/jesseduffield/lazygit/pkg/gui/filetree"
+	"github.com/sirupsen/logrus"
 )
 
-// IGitCommand ...
-type IGitCommand interface {
+// IGit ...
+type IGit interface {
 	NewBranch(name string, base string) error
 	CurrentBranchName() (string, string, error)
 	DeleteBranch(branch string, force bool) error
@@ -77,11 +78,12 @@ type IGitCommand interface {
 	ResetAndClean() error
 	EditFileCmdObj(filename string) (ICmdObj, error)
 	GetPushToCurrent() bool
+	GetLog() *logrus.Entry
 	NewPatchManager() *patch.PatchManager
-	WithSpan(span string) IGitCommand
+	WithSpan(span string) IGit
 	Run(cmdObj ICmdObj) error
-	GetOSCommand() *oscommands.OSCommand
 	RunWithOutput(cmdObj ICmdObj) (string, error)
+	GetOS() *oscommands.OS
 	SkipEditor(cmdObj ICmdObj)
 	AllBranchesCmdObj() ICmdObj
 	BuildShellCmdObj(command string) ICmdObj
@@ -89,11 +91,11 @@ type IGitCommand interface {
 	GenericContinueCmdObj() ICmdObj
 	GenericMergeOrRebaseCmdObj(action string) ICmdObj
 	RunGitCmdFromStr(cmdStr string) error
+	NewStatusFileLoader() *StatusFileLoader
 	FlowStart(branchType string, name string) ICmdObj
 	FlowFinish(branchType string, name string) ICmdObj
+	GetGitFlowRegexpConfig() (string, error)
 	GetFilesInDiff(from string, to string, reverse bool) ([]*models.CommitFile, error)
-	GetStatusFiles(opts GetStatusFileOptions) []*models.File
-	GitStatus(opts GitStatusOptions) (string, error)
 	GetReflogCommits(lastReflogCommit *models.Commit, filterPath string) ([]*models.Commit, bool, error)
 	GetRemotes() ([]*models.Remote, error)
 	GetStashEntries(filterPath string) []*models.StashEntry
@@ -157,4 +159,5 @@ type IGitCommand interface {
 	CreateLightweightTag(tagName string, commitSha string) error
 	DeleteTag(tagName string) error
 	PushTag(remoteName string, tagName string) error
+	BuildGitCmdObjFromStr(cmdStr string) ICmdObj
 }
