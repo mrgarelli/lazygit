@@ -24,6 +24,7 @@ type IGitCommand interface {
 	GetCurrentBranchUpstreamDifferenceCount() (string, string)
 	GetBranchUpstreamDifferenceCount(branchName string) (string, string)
 	GetCommitDifferences(from, to string) (string, string)
+	GetCommitDifferenceCmdObj(from string, to string) ICmdObj
 	Merge(branchName string, opts MergeOpts) error
 	AbortMerge() error
 	IsHeadDetached() bool
@@ -38,7 +39,7 @@ type IGitCommand interface {
 	GetCommitMessage(commitSha string) (string, error)
 	GetCommitMessageFirstLine(sha string) (string, error)
 	AmendHead() error
-	AmendHeadCmdStr() string
+	AmendHeadCmdObj() ICmdObj
 	ShowCmdObj(sha string, filterPath string) ICmdObj
 	Revert(sha string) error
 	RevertMerge(sha string, parentNumber int) error
@@ -81,15 +82,17 @@ type IGitCommand interface {
 	WithSpan(span string) IGitCommand
 	RunCommand(formatString string, formatArgs ...interface{}) error
 	RunExecutable(cmdObj ICmdObj) error
-	RunExecutableWithOutput(cmdObj ICmdObj) (string, error)
-	RunCommandWithOutput(formatString string, formatArgs ...interface{}) (string, error)
 	GetOSCommand() *oscommands.OSCommand
+	RunCommandWithOutput(cmdObj ICmdObj) (string, error)
 	SkipEditor(cmdObj ICmdObj)
 	AllBranchesCmdObj() ICmdObj
 	BuildShellCmdObj(command string) ICmdObj
 	GenericAbortCmdObj() ICmdObj
 	GenericContinueCmdObj() ICmdObj
 	GenericMergeOrRebaseCmdObj(action string) ICmdObj
+	RunGitCmdFromStr(cmdStr string) error
+	FlowStart(branchType string, name string) ICmdObj
+	FlowFinish(branchType string, name string) ICmdObj
 	GetFilesInDiff(from string, to string, reverse bool) ([]*models.CommitFile, error)
 	GetStatusFiles(opts GetStatusFileOptions) []*models.File
 	GitStatus(opts GitStatusOptions) (string, error)
@@ -122,7 +125,7 @@ type IGitCommand interface {
 	UpdateRemoteUrl(remoteName string, updatedUrl string) error
 	DeleteRemoteBranch(remoteName string, branchName string) error
 	CheckRemoteBranchExists(branch *models.Branch) bool
-	GetRemoteURL() string
+	GetRmoteURL() string
 	StashDo(index int, method string) error
 	StashSave(message string) error
 	ShowStashEntryCmdObj(index int) ICmdObj

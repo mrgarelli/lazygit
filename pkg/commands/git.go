@@ -54,7 +54,9 @@ func NewGitCommand(log *logrus.Entry, osCommand *oscommands.OSCommand, tr *i18n.
 	var repo *gogit.Repository
 
 	// see what our default push behaviour is
-	output, err := osCommand.RunCommandWithOutput("git config --get push.default")
+	output, err := osCommand.RunCommandWithOutput(
+		BuildGitCmdObjFromStr("config --get push.default"),
+	)
 	pushToCurrent := false
 	if err != nil {
 		log.Errorf("error reading git config: %v", err)

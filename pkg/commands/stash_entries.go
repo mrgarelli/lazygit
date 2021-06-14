@@ -8,13 +8,13 @@ import (
 
 // StashDo modify stash
 func (c *GitCommand) StashDo(index int, method string) error {
-	return c.RunCommand("git stash %s stash@{%d}", method, index)
+	return c.RunGitCmdFromStr(fmt.Sprintf("stash %s stash@{%d}", method, index))
 }
 
 // StashSave save stash
 // TODO: before calling this, check if there is anything to save
 func (c *GitCommand) StashSave(message string) error {
-	return c.RunCommand("git stash save %s", c.GetOSCommand().Quote(message))
+	return c.RunGitCmdFromStr(fmt.Sprintf("stash save %s", c.GetOSCommand().Quote(message)))
 }
 
 // GetStashEntryDiff stash diff

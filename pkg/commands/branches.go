@@ -93,11 +93,11 @@ func (c *GitCommand) GetBranchGraphCmdObj(branchName string) ICmdObj {
 }
 
 func (c *GitCommand) SetUpstreamBranch(upstream string) error {
-	return c.RunCommand("git branch -u %s", upstream)
+	return c.RunGitCmdFromStr(fmt.Sprintf("branch -u %s", upstream))
 }
 
 func (c *GitCommand) SetBranchUpstream(remoteName string, remoteBranchName string, branchName string) error {
-	return c.RunCommand("git branch --set-upstream-to=%s/%s %s", remoteName, remoteBranchName, branchName)
+	return c.RunGitCmdFromStr(fmt.Sprintf("branch --set-upstream-to=%s/%s %s", remoteName, remoteBranchName, branchName))
 }
 
 func (c *GitCommand) GetCurrentBranchUpstreamDifferenceCount() (string, string) {
@@ -171,5 +171,5 @@ func (c *GitCommand) ResetMixed(ref string) error {
 }
 
 func (c *GitCommand) RenameBranch(oldName string, newName string) error {
-	return c.RunCommand("git branch --move %s %s", oldName, newName)
+	return c.RunGitCmdFromStr(fmt.Sprintf("branch --move %s %s", oldName, newName))
 }

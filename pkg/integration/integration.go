@@ -290,7 +290,7 @@ func generateSnapshot(dir string) (string, error) {
 
 	for _, cmdStr := range cmdStrs {
 		// ignoring error for now. If there's an error it could be that there are no results
-		output, _ := osCommand.RunCommandWithOutput(cmdStr)
+		output, _ := osCommand.RunCommandWithOutput(oscommands.NewCmdObjFromStr(cmdStr))
 
 		snapshot += output + "\n"
 	}
