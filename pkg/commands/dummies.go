@@ -12,13 +12,19 @@ func NewDummyGit() *Git {
 	return NewDummyGitWithOS(oscommands.NewDummyOS())
 }
 
+func NewDummyGitConfig() *GitConfig {
+	return &GitConfig{
+		getGitConfigValue: func(string) (string, error) { return "", nil },
+	}
+}
+
 // NewDummyGitWithOS creates a new dummy Git for testing
 func NewDummyGitWithOS(oS *oscommands.OS) *Git {
 	return &Git{
-		log:               utils.NewDummyLog(),
-		os:                oS,
-		tr:                i18n.NewTranslationSet(utils.NewDummyLog()),
-		config:            config.NewDummyAppConfig(),
-		getGitConfigValue: func(string) (string, error) { return "", nil },
+		GitConfig: &GitConfig{},
+		log:       utils.NewDummyLog(),
+		os:        oS,
+		tr:        i18n.NewTranslationSet(utils.NewDummyLog()),
+		config:    config.NewDummyAppConfig(),
 	}
 }

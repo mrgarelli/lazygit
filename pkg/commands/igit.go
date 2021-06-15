@@ -55,6 +55,7 @@ type IGit interface {
 	CherryPickCommits(commits []*models.Commit) error
 	CreateFixupCommit(sha string) error
 
+	// config
 	GetPager(width int) string
 	GetConfigValue(key string) string
 	UsingGpg() bool
@@ -102,6 +103,7 @@ type IGit interface {
 	RunCommandWithCredentialsPrompt(cmdObj ICmdObj) error
 	RunCommandWithCredentialsHandling(cmdObj ICmdObj) error
 	FailOnCredentialsRequest(cmdObj ICmdObj) ICmdObj
+
 	SetCredentialHandlers(promptUserForCredential func(CredentialKind) string, handleCredentialError func(error))
 
 	// common

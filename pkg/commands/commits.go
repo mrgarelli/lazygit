@@ -4,9 +4,16 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jesseduffield/lazygit/pkg/commands/models"
 	. "github.com/jesseduffield/lazygit/pkg/commands/types"
 )
+
+// type IGitCommon interface {
+
+// }
+
+// type Commits struct {
+// 	IGitCommon
+// }
 
 // RenameCommit renames the topmost commit with the given name
 func (c *Git) RenameHeadCommit(name string) error {
@@ -89,16 +96,6 @@ func (c *Git) Revert(sha string) error {
 
 func (c *Git) RevertMerge(sha string, parentNumber int) error {
 	return c.RunGitCmdFromStr(fmt.Sprintf("revert %s -m %d", sha, parentNumber))
-}
-
-// CherryPickCommits begins an interactive rebase with the given shas being cherry picked onto HEAD
-func (c *Git) CherryPickCommits(commits []*models.Commit) error {
-	todo := ""
-	for _, commit := range commits {
-		todo = "pick " + commit.Sha + " " + commit.Name + "\n" + todo
-	}
-
-	return c.Run(c.InteractiveRebaseCmdObj("HEAD", todo, false))
 }
 
 // CreateFixupCommit creates a commit that fixes up a previous commit

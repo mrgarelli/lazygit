@@ -267,3 +267,13 @@ func (c *Git) GenericMergeOrRebaseAction(commandType string, command string) err
 	}
 	return nil
 }
+
+// CherryPickCommits begins an interactive rebase with the given shas being cherry picked onto HEAD
+func (c *Git) CherryPickCommits(commits []*models.Commit) error {
+	todo := ""
+	for _, commit := range commits {
+		todo = "pick " + commit.Sha + " " + commit.Name + "\n" + todo
+	}
+
+	return c.Run(c.InteractiveRebaseCmdObj("HEAD", todo, false))
+}
