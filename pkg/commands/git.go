@@ -97,6 +97,10 @@ func NewGit(log *logrus.Entry, oS *oscommands.OS, tr *i18n.TranslationSet, confi
 	return gitCommand, nil
 }
 
+func (c *Git) Quote(str string) string {
+	return c.os.Quote(str)
+}
+
 func (c *Git) NewPatchManager() *patch.PatchManager {
 	return patch.NewPatchManager(c.log, c.ShowFileDiff)
 }
@@ -395,8 +399,4 @@ func (c *Git) RunGitCmdFromStr(cmdStr string) error {
 
 func (c *Git) GetStatusFiles(opts loaders.LoadStatusFilesOpts) []*models.File {
 	return loaders.NewStatusFileLoader(c).Load(opts)
-}
-
-func (*Git) Haha() int {
-	return
 }

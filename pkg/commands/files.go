@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-errors/errors"
+	"github.com/jesseduffield/lazygit/pkg/commands/loaders"
 	"github.com/jesseduffield/lazygit/pkg/commands/models"
 	"github.com/jesseduffield/lazygit/pkg/commands/oscommands"
 	. "github.com/jesseduffield/lazygit/pkg/commands/types"
@@ -64,7 +65,7 @@ func (c *Git) BeforeAndAfterFileForRename(file *models.File) (*models.File, *mod
 	// all files, passing the --no-renames flag and then recursively call the function
 	// again for the before file and after file.
 
-	filesWithoutRenames := c.NewStatusFileLoader().Load(GetStatusFileOptions{NoRenames: true})
+	filesWithoutRenames := c.GetStatusFiles(loaders.LoadStatusFilesOpts{NoRenames: true})
 	var beforeFile *models.File
 	var afterFile *models.File
 	for _, f := range filesWithoutRenames {
@@ -284,7 +285,7 @@ func (c *Git) EditFileCmdObj(filename string) (ICmdObj, error) {
 		editor = c.GetOS().Getenv("EDITOR")
 	}
 	if editor == "" {
-		if err := c.GetOS().Run(oscommands.NewCmdObjFromStr("which vi")); err == nil {
+		if err := c.Run(oscommands.NewCmdObjFromStr("which vi")); err == nil {
 			editor = "vi"
 		}
 	}

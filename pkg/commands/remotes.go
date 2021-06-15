@@ -30,7 +30,7 @@ func (c *Git) DeleteRemoteBranch(remoteName string, branchName string) error {
 
 // CheckRemoteBranchExists Returns remote branch
 func (c *Git) CheckRemoteBranchExists(branch *models.Branch) bool {
-	_, err := c.GetOS().RunWithOutput(
+	_, err := c.RunWithOutput(
 		BuildGitCmdObjFromStr(
 			fmt.Sprintf("show-ref --verify -- refs/remotes/origin/%s",
 				branch.Name),

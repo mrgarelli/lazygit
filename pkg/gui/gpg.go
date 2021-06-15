@@ -27,7 +27,7 @@ func (gui *Gui) withGpgHandling(cmdObj ICmdObj, waitingStatus string, onSuccess 
 		}
 	} else {
 		return gui.WithWaitingStatus(waitingStatus, func() error {
-			err := gui.OS.Run(cmdObj)
+			err := gui.Git.Run(cmdObj)
 			if err != nil {
 				return err
 			} else if onSuccess != nil {

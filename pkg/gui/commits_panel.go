@@ -238,7 +238,7 @@ func (gui *Gui) handleRenameCommit() error {
 		Title:          gui.Tr.LcRenameCommit,
 		InitialContent: message,
 		HandleConfirm: func(response string) error {
-			if err := gui.Git.WithSpan(gui.Tr.Spans.RewordCommit).RenameCommit(response); err != nil {
+			if err := gui.Git.WithSpan(gui.Tr.Spans.RewordCommit).RenameHeadCommit(response); err != nil {
 				return gui.SurfaceError(err)
 			}
 

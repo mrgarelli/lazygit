@@ -9,7 +9,7 @@ import (
 )
 
 // RenameCommit renames the topmost commit with the given name
-func (c *Git) RenameCommit(name string) error {
+func (c *Git) RenameHeadCommit(name string) error {
 	return c.RunGitCmdFromStr(fmt.Sprintf("commit --allow-empty --amend --only -m %s", c.GetOS().Quote(name)))
 }
 
@@ -18,11 +18,11 @@ type ResetToCommitOptions struct {
 }
 
 // ResetToCommit reset to commit
-func (c *Git) ResetToCommit(sha string, strength string, options ResetToCommitOptions) error {
-	cmdObj := BuildGitCmdObj("reset", []string{sha}, map[string]bool{"--" + strength: true})
+func (c *Git) ResetToRef(ref string, strength string, options ResetToCommitOptions) error {
+	cmdObj := BuildGitCmdObjFromStr(fmt.Sprintf("reset --%s %s", strength, ref))
 	cmdObj.AddEnvVars(options.EnvVars...)
 
-	return c.GetOS().Run(cmdObj)
+	return c.Run(cmdObj)
 }
 
 func (c *Git) CommitCmdObj(message string, flags string) ICmdObj {
@@ -45,12 +45,12 @@ func (c *Git) CommitCmdObj(message string, flags string) ICmdObj {
 // Get the subject of the HEAD commit
 func (c *Git) GetHeadCommitMessage() (string, error) {
 	cmdObj := BuildGitCmdObjFromStr("log -1 --pretty=%s")
-	message, err := c.GetOS().RunWithOutput(cmdObj)
+	message, err := c.RunWithOutput(cmdObj)
 	return strings.TrimSpace(message), err
 }
 
 func (c *Git) GetCommitMessage(commitSha string) (string, error) {
-	messageWithHeader, err := c.GetOS().RunWithOutput(
+	messageWithHeader, err := c.RunWithOutput(
 		BuildGitCmdObjFromStr("rev-list --format=%B --max-count=1 " + commitSha),
 	)
 	message := strings.Join(strings.SplitAfter(messageWithHeader, "\n")[1:], "\n")
@@ -65,7 +65,7 @@ func (c *Git) GetCommitMessageFirstLine(sha string) (string, error) {
 
 // AmendHead amends HEAD with whatever is staged in your working tree
 func (c *Git) AmendHead() error {
-	return c.GetOS().Run(c.AmendHeadCmdObj())
+	return c.Run(c.AmendHeadCmdObj())
 }
 
 func (c *Git) AmendHeadCmdObj() ICmdObj {
@@ -98,7 +98,7 @@ func (c *Git) CherryPickCommits(commits []*models.Commit) error {
 		todo = "pick " + commit.Sha + " " + commit.Name + "\n" + todo
 	}
 
-	return c.Run(c.PrepareInteractiveRebaseCommand("HEAD", todo, false))
+	return c.Run(c.InteractiveRebaseCmdObj("HEAD", todo, false))
 }
 
 // CreateFixupCommit creates a commit that fixes up a previous commit

@@ -107,7 +107,7 @@ func (c *Git) FetchInBackground(opts FetchOptions) error {
 	cmdObj := GetFetchCommandObj(opts)
 
 	cmdObj = c.FailOnCredentialsRequest(cmdObj)
-	return c.os.Run(cmdObj)
+	return c.Run(cmdObj)
 }
 
 func GetFetchCommandObj(opts FetchOptions) ICmdObj {

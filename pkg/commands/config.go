@@ -8,7 +8,7 @@ import (
 	"github.com/jesseduffield/lazygit/pkg/utils"
 )
 
-func (c *Git) ConfiguredPager() string {
+func (c *Git) configuredPager() string {
 	if os.Getenv("GIT_PAGER") != "" {
 		return os.Getenv("GIT_PAGER")
 	}
@@ -26,7 +26,7 @@ func (c *Git) ConfiguredPager() string {
 func (c *Git) GetPager(width int) string {
 	useConfig := c.config.GetUserConfig().Git.Paging.UseConfig
 	if useConfig {
-		pager := c.ConfiguredPager()
+		pager := c.configuredPager()
 		return strings.Split(pager, "| less")[0]
 	}
 

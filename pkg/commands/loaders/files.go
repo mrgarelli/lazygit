@@ -44,46 +44,54 @@ func (c *StatusFileLoader) Load(opts LoadStatusFilesOpts) []*models.File {
 	}
 
 	statusStrings := c.cleanGitStatus(status)
-	files := []*models.File{}
+	files := make([]*models.File, 0, len(statusStrings))
 
 	for _, statusString := range statusStrings {
-		if strings.HasPrefix(statusString, "warning") {
-			c.GetLog().Warningf("warning when calling git status: %s", statusString)
+		file := c.fileFromStatusString(statusString)
+		if file == nil {
 			continue
 		}
-		change := statusString[0:2]
-		stagedChange := change[0:1]
-		unstagedChange := statusString[1:2]
-		name := statusString[3:]
-		untracked := utils.IncludesString([]string{"??", "A ", "AM"}, change)
-		hasNoStagedChanges := utils.IncludesString([]string{" ", "U", "?"}, stagedChange)
-		hasMergeConflicts := utils.IncludesString([]string{"DD", "AA", "UU", "AU", "UA", "UD", "DU"}, change)
-		hasInlineMergeConflicts := utils.IncludesString([]string{"UU", "AA"}, change)
-		previousName := ""
-		if strings.Contains(name, RENAME_SEPARATOR) {
-			split := strings.Split(name, RENAME_SEPARATOR)
-			name = split[1]
-			previousName = split[0]
-		}
 
-		file := &models.File{
-			Name:                    name,
-			PreviousName:            previousName,
-			DisplayString:           statusString,
-			HasStagedChanges:        !hasNoStagedChanges,
-			HasUnstagedChanges:      unstagedChange != " ",
-			Tracked:                 !untracked,
-			Deleted:                 unstagedChange == "D" || stagedChange == "D",
-			Added:                   unstagedChange == "A" || untracked,
-			HasMergeConflicts:       hasMergeConflicts,
-			HasInlineMergeConflicts: hasInlineMergeConflicts,
-			Type:                    c.GetOS().FileType(name),
-			ShortStatus:             change,
-		}
 		files = append(files, file)
 	}
 
 	return files
+}
+
+func (c *StatusFileLoader) fileFromStatusString(statusString string) *models.File {
+	if strings.HasPrefix(statusString, "warning") {
+		c.GetLog().Warningf("warning when calling git status: %s", statusString)
+		return nil
+	}
+	change := statusString[0:2]
+	stagedChange := change[0:1]
+	unstagedChange := statusString[1:2]
+	name := statusString[3:]
+	untracked := utils.IncludesString([]string{"??", "A ", "AM"}, change)
+	hasNoStagedChanges := utils.IncludesString([]string{" ", "U", "?"}, stagedChange)
+	hasMergeConflicts := utils.IncludesString([]string{"DD", "AA", "UU", "AU", "UA", "UD", "DU"}, change)
+	hasInlineMergeConflicts := utils.IncludesString([]string{"UU", "AA"}, change)
+	previousName := ""
+	if strings.Contains(name, RENAME_SEPARATOR) {
+		split := strings.Split(name, RENAME_SEPARATOR)
+		name = split[1]
+		previousName = split[0]
+	}
+
+	return &models.File{
+		Name:                    name,
+		PreviousName:            previousName,
+		DisplayString:           statusString,
+		HasStagedChanges:        !hasNoStagedChanges,
+		HasUnstagedChanges:      unstagedChange != " ",
+		Tracked:                 !untracked,
+		Deleted:                 unstagedChange == "D" || stagedChange == "D",
+		Added:                   unstagedChange == "A" || untracked,
+		HasMergeConflicts:       hasMergeConflicts,
+		HasInlineMergeConflicts: hasInlineMergeConflicts,
+		Type:                    c.GetOS().FileType(name),
+		ShortStatus:             change,
+	}
 }
 
 func (c *StatusFileLoader) buildCmdObj(opts LoadStatusFilesOpts) ICmdObj {
@@ -103,7 +111,7 @@ func (c *StatusFileLoader) buildCmdObj(opts LoadStatusFilesOpts) ICmdObj {
 	return c.BuildGitCmdObjFromStr(fmt.Sprintf("status %s --porcelain -z %s", untrackedFilesArg, noRenamesFlag))
 }
 
-func (c *StatusFileLoader) cleanGitStatus(statusLines string) []string {
+func (*StatusFileLoader) cleanGitStatus(statusLines string) []string {
 	splitLines := strings.Split(statusLines, "\x00")
 	// if a line starts with 'R' then the next line is the original file.
 	for i := 0; i < len(splitLines)-1; i++ {

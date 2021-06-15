@@ -18,7 +18,7 @@ func (c *Git) GetRewordCommitCmdObj(commits []*models.Commit, index int) (ICmdOb
 		return nil, err
 	}
 
-	return c.PrepareInteractiveRebaseCommand(sha, todo, false), nil
+	return c.InteractiveRebaseCmdObj(sha, todo, false), nil
 }
 
 func (c *Git) MoveCommitDown(commits []*models.Commit, index int) error {
@@ -35,7 +35,7 @@ func (c *Git) MoveCommitDown(commits []*models.Commit, index int) error {
 	}
 
 	return c.Run(
-		c.PrepareInteractiveRebaseCommand(commits[index+2].Sha, todo, true),
+		c.InteractiveRebaseCmdObj(commits[index+2].Sha, todo, true),
 	)
 }
 
@@ -45,17 +45,17 @@ func (c *Git) InteractiveRebase(commits []*models.Commit, index int, action stri
 		return err
 	}
 
-	return c.Run(c.PrepareInteractiveRebaseCommand(sha, todo, true))
+	return c.Run(c.InteractiveRebaseCmdObj(sha, todo, true))
 }
 
-// PrepareInteractiveRebaseCommand returns the command object for an interactive rebase
+// InteractiveRebaseCmdObj returns the command object for an interactive rebase
 // we tell git to run lazygit to edit the todo list, and we pass the client
 // lazygit a todo string to write to the todo file
-func (c *Git) PrepareInteractiveRebaseCommand(baseSha string, todo string, overrideEditor bool) ICmdObj {
+func (c *Git) InteractiveRebaseCmdObj(baseSha string, todo string, overrideEditor bool) ICmdObj {
 	ex := c.GetOS().GetLazygitPath()
 
 	debug := "FALSE"
-	if c.GetOS().Config.GetDebug() {
+	if c.config.GetDebug() {
 		debug = "TRUE"
 	}
 
@@ -207,7 +207,7 @@ func (c *Git) BeginInteractiveRebaseForCommit(commits []*models.Commit, commitIn
 		return err
 	}
 
-	if err := c.Run(c.PrepareInteractiveRebaseCommand(sha, todo, true)); err != nil {
+	if err := c.Run(c.InteractiveRebaseCmdObj(sha, todo, true)); err != nil {
 		return err
 	}
 
@@ -216,7 +216,7 @@ func (c *Git) BeginInteractiveRebaseForCommit(commits []*models.Commit, commitIn
 
 // RebaseBranch interactive rebases onto a branch
 func (c *Git) RebaseBranch(branchName string) error {
-	return c.Run(c.PrepareInteractiveRebaseCommand(branchName, "", false))
+	return c.Run(c.InteractiveRebaseCmdObj(branchName, "", false))
 }
 
 func (c *Git) AbortRebase() error {

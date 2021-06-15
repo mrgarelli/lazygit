@@ -49,7 +49,7 @@ func (c *Git) CurrentBranchName() (string, string, error) {
 
 // DeleteBranch delete branch
 func (c *Git) DeleteBranch(branch string, force bool) error {
-	return c.GetOS().Run(
+	return c.Run(
 		BuildGitCmdObj("branch", []string{branch}, map[string]bool{"-d": !force, "-D": force}),
 	)
 }
@@ -64,14 +64,14 @@ func (c *Git) Checkout(branch string, options CheckoutOptions) error {
 	cmdObj := BuildGitCmdObj("checkout", []string{branch}, map[string]bool{"--force": options.Force})
 	cmdObj.AddEnvVars(options.EnvVars...)
 
-	return c.GetOS().Run(cmdObj)
+	return c.Run(cmdObj)
 }
 
 // GetBranchGraph gets the color-formatted graph of the log for the given branch
 // Currently it limits the result to 100 commits, but when we get async stuff
 // working we can do lazy loading
 func (c *Git) GetBranchGraph(branchName string) (string, error) {
-	return c.GetOS().RunWithOutput(c.GetBranchGraphCmdObj(branchName))
+	return c.RunWithOutput(c.GetBranchGraphCmdObj(branchName))
 }
 
 func (c *Git) GetUpstreamForBranch(branchName string) (string, error) {
@@ -101,7 +101,7 @@ func (c *Git) SetBranchUpstream(remoteName string, remoteBranchName string, bran
 }
 
 func (c *Git) GetCurrentBranchUpstreamDifferenceCount() (string, string) {
-	return c.GetCommitDifferences("HEAD", "HEAD@{u}")
+	return c.GetBranchUpstreamDifferenceCount("HEAD")
 }
 
 func (c *Git) GetBranchUpstreamDifferenceCount(branchName string) (string, string) {
@@ -111,23 +111,19 @@ func (c *Git) GetBranchUpstreamDifferenceCount(branchName string) (string, strin
 // GetCommitDifferences checks how many pushables/pullables there are for the
 // current branch
 func (c *Git) GetCommitDifferences(from, to string) (string, string) {
-	pushableCount, err := c.GetOS().RunWithOutput(
-		c.GetCommitDifferenceCmdObj(to, from),
-	)
+	pushableCount, err := c.GetCommitDifference(to, from)
 	if err != nil {
 		return "?", "?"
 	}
-	pullableCount, err := c.GetOS().RunWithOutput(
-		c.GetCommitDifferenceCmdObj(from, to),
-	)
+	pullableCount, err := c.GetCommitDifference(from, to)
 	if err != nil {
 		return "?", "?"
 	}
 	return strings.TrimSpace(pushableCount), strings.TrimSpace(pullableCount)
 }
 
-func (c *Git) GetCommitDifferenceCmdObj(from string, to string) ICmdObj {
-	return BuildGitCmdObjFromStr(fmt.Sprintf("rev-list %s..%s --count", from, to))
+func (c *Git) GetCommitDifference(from string, to string) (string, error) {
+	return c.RunWithOutput(BuildGitCmdObjFromStr(fmt.Sprintf("rev-list %s..%s --count", from, to)))
 }
 
 type MergeOpts struct {

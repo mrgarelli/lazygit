@@ -11,7 +11,7 @@ import (
 )
 
 // TestGitCommandRenameCommit is a function.
-func TestGitCommandRenameCommit(t *testing.T) {
+func TestGitCommandRenameHeadCommit(t *testing.T) {
 	gitCmd := NewDummyGit()
 	gitCmd.GetOSCommand().Command = func(cmd string, args ...string) *exec.Cmd {
 		assert.EqualValues(t, "git", cmd)
@@ -20,11 +20,11 @@ func TestGitCommandRenameCommit(t *testing.T) {
 		return secureexec.Command("echo")
 	}
 
-	assert.NoError(t, gitCmd.RenameCommit("test"))
+	assert.NoError(t, gitCmd.RenameHeadCommit("test"))
 }
 
 // TestGitCommandResetToCommit is a function.
-func TestGitCommandResetToCommit(t *testing.T) {
+func TestGitCommandResetToRef(t *testing.T) {
 	gitCmd := NewDummyGit()
 	gitCmd.GetOSCommand().Command = func(cmd string, args ...string) *exec.Cmd {
 		assert.EqualValues(t, "git", cmd)
@@ -33,7 +33,7 @@ func TestGitCommandResetToCommit(t *testing.T) {
 		return secureexec.Command("echo")
 	}
 
-	assert.NoError(t, gitCmd.ResetToCommit("78976bc", "hard", oscommands.RunCommandOptions{}))
+	assert.NoError(t, gitCmd.ResetToRef("78976bc", "hard", oscommands.RunCommandOptions{}))
 }
 
 // TestGitCommandCommitStr is a function.

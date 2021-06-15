@@ -10,7 +10,7 @@ import (
 // WorktreeFileDiff returns the diff of a file
 func (c *Git) WorktreeFileDiff(file *models.File, plain bool, cached bool) string {
 	// for now we assume an error means the file was deleted
-	s, _ := c.GetOS().RunWithOutput(c.WorktreeFileDiffCmdObj(file, plain, cached))
+	s, _ := c.RunWithOutput(c.WorktreeFileDiffCmdObj(file, plain, cached))
 	return s
 }
 

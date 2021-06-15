@@ -323,7 +323,7 @@ func (c *CommitListBuilder) getMergeBase(refName string) (string, error) {
 	}
 
 	// swallowing error because it's not a big deal; probably because there are no commits yet
-	output, _ := c.OS.RunWithOutput(BuildGitCmdObjFromStr(fmt.Sprintf("merge-base %s %s", refName, baseBranch)))
+	output, _ := c.Git.RunWithOutput(BuildGitCmdObjFromStr(fmt.Sprintf("merge-base %s %s", refName, baseBranch)))
 	return ignoringWarnings(output), nil
 }
 
@@ -340,7 +340,7 @@ func ignoringWarnings(commandOutput string) string {
 // getFirstPushedCommit returns the first commit SHA which has been pushed to the ref's upstream.
 // all commits above this are deemed unpushed and marked as such.
 func (c *CommitListBuilder) getFirstPushedCommit(refName string) (string, error) {
-	output, err := c.OS.RunWithOutput(BuildGitCmdObjFromStr(fmt.Sprintf("merge-base %s %s@{u}", refName, refName)))
+	output, err := c.Git.RunWithOutput(BuildGitCmdObjFromStr(fmt.Sprintf("merge-base %s %s@{u}", refName, refName)))
 	if err != nil {
 		return "", err
 	}

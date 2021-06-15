@@ -86,7 +86,7 @@ func (c *Git) MovePatchToSelectedCommit(commits []*models.Commit, sourceCommitId
 	}
 
 	if err := c.Run(
-		c.PrepareInteractiveRebaseCommand(commits[baseIndex].Sha, todo, true),
+		c.InteractiveRebaseCmdObj(commits[baseIndex].Sha, todo, true),
 	); err != nil {
 		return err
 	}
