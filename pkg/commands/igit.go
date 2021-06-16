@@ -108,9 +108,9 @@ type IGit interface {
 	FetchInBackground(opts FetchOptions) error
 	FastForward(branchName string, remoteName string, remoteBranchName string) error
 	FetchRemote(remoteName string) error
+	PushRef(remoteName string, refName string) error
 
 	// tags
 	DeleteTag(tagName string) error
-	PushRef(remoteName string, refName string) error
 	CreateLightweightTag(tagName string, commitSha string) error
 }
