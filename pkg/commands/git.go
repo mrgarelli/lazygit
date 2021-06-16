@@ -35,6 +35,7 @@ type Git struct {
 	commitsMgr           *CommitsMgr
 	branchesMgr          *BranchesMgr
 	worktreeMgr          *WorktreeMgr
+	submodulesMgr        *SubmodulesMgr
 	log                  *logrus.Entry
 	os                   oscommands.IOS
 	repo                 *gogit.Repository
@@ -71,20 +72,22 @@ func NewGit(log *logrus.Entry, oS *oscommands.OS, tr *i18n.TranslationSet, confi
 	gitConfig := NewGitConfigMgr(commander, config.GetUserConfig(), config.GetUserConfigDir(), getGitConfigValue, log)
 	commitsMgr := NewCommitsMgr(commander, gitConfig)
 	branchesMgr := NewBranchesMgr(commander, gitConfig)
-	worktreeMgr := NewWorktreeMgr(commander, gitConfig, log, oS)
+	submodulesMgr := NewSubmodulesMgr(commander, gitConfig, log, dotGitDir)
+	worktreeMgr := NewWorktreeMgr(commander, gitConfig, branchesMgr, submodulesMgr, log, oS)
 
 	gitCommand := &Git{
-		Commander:    commander,
-		GitConfigMgr: gitConfig,
-		commitsMgr:   commitsMgr,
-		branchesMgr:  branchesMgr,
-		worktreeMgr:  worktreeMgr,
-		log:          log,
-		os:           oS,
-		tr:           tr,
-		repo:         repo,
-		config:       config,
-		dotGitDir:    dotGitDir,
+		Commander:     commander,
+		GitConfigMgr:  gitConfig,
+		commitsMgr:    commitsMgr,
+		branchesMgr:   branchesMgr,
+		worktreeMgr:   worktreeMgr,
+		submodulesMgr: submodulesMgr,
+		log:           log,
+		os:            oS,
+		tr:            tr,
+		repo:          repo,
+		config:        config,
+		dotGitDir:     dotGitDir,
 	}
 
 	return gitCommand, nil
@@ -100,6 +103,10 @@ func (c *Git) Branches() IBranchesMgr {
 
 func (c *Git) Worktree() IWorktreeMgr {
 	return c.worktreeMgr
+}
+
+func (c *Git) Submodules() ISubmodulesMgr {
+	return c.submodulesMgr
 }
 
 func (c *Git) Quote(str string) string {

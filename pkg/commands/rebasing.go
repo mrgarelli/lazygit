@@ -292,7 +292,7 @@ func (c *Git) DiscardOldFileChanges(commits []*models.Commit, commitIndex int, f
 		if err := c.Worktree().StageFile(fileName); err != nil {
 			return err
 		}
-	} else if err := c.CheckoutFile("HEAD^", fileName); err != nil {
+	} else if err := c.Worktree().CheckoutFile("HEAD^", fileName); err != nil {
 		return err
 	}
 

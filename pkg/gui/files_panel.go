@@ -318,7 +318,7 @@ func (gui *Gui) handleIgnoreFile() error {
 					return err
 				}
 
-				if err := gitCommand.RemoveTrackedFiles(node.GetPath()); err != nil {
+				if err := gitCommand.Worktree().RemoveTrackedFiles(node.GetPath()); err != nil {
 					return err
 				}
 
@@ -475,7 +475,7 @@ func (gui *Gui) handleCommitEditorPress() error {
 }
 
 func (gui *Gui) editFile(filename string) error {
-	cmdObj, err := gui.Git.EditFileCmdObj(filename)
+	cmdObj, err := gui.Git.Worktree().EditFileCmdObj(filename)
 	if err != nil {
 		return gui.SurfaceError(err)
 	}

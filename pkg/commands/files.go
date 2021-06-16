@@ -18,6 +18,7 @@ import (
 
 //counterfeiter:generate . IWorktreeMgr
 type IWorktreeMgr interface {
+	GetStatusFiles(opts loaders.LoadStatusFilesOpts) []*models.File
 	OpenMergeToolCmdObj() ICmdObj
 	StageFile(fileName string) error
 	StageAll() error
@@ -29,28 +30,31 @@ type IWorktreeMgr interface {
 	DiscardUnstagedFileChanges(file *models.File) error
 	Ignore(filename string) error
 	ApplyPatch(patch string, flags ...string) error
-	// CheckoutFile(commitSha, fileName string) error
-	// DiscardOldFileChanges(commits []*models.Commit, commitIndex int, fileName string) error
-	// DiscardAnyUnstagedFileChanges() error
-	// RemoveTrackedFiles(name string) error
-	// RemoveUntrackedFiles() error
-	// ResetAndClean() error
-	GetStatusFiles(opts loaders.LoadStatusFilesOpts) []*models.File
+	CheckoutFile(commitSha, fileName string) error
+	DiscardAnyUnstagedFileChanges() error
+	RemoveTrackedFiles(name string) error
+	RemoveUntrackedFiles() error
+	ResetAndClean() error
+	EditFileCmdObj(filename string) (ICmdObj, error)
 }
 
 type WorktreeMgr struct {
-	commander ICommander
-	config    IGitConfigMgr
-	log       *logrus.Entry
-	os        oscommands.IOS
+	commander     ICommander
+	config        IGitConfigMgr
+	log           *logrus.Entry
+	os            oscommands.IOS
+	branchesMgr   IBranchesMgr
+	submodulesMgr ISubmodulesMgr
 }
 
-func NewWorktreeMgr(commander ICommander, config IGitConfigMgr, log *logrus.Entry, oS *oscommands.OS) *WorktreeMgr {
+func NewWorktreeMgr(commander ICommander, config IGitConfigMgr, branchesMgr IBranchesMgr, submodulesMgr ISubmodulesMgr, log *logrus.Entry, oS *oscommands.OS) *WorktreeMgr {
 	return &WorktreeMgr{
-		commander: commander,
-		config:    config,
-		os:        oS,
-		log:       log,
+		commander:     commander,
+		config:        config,
+		branchesMgr:   branchesMgr,
+		submodulesMgr: submodulesMgr,
+		os:            oS,
+		log:           log,
 	}
 }
 
@@ -236,63 +240,63 @@ func (c *WorktreeMgr) ApplyPatch(patch string, flags ...string) error {
 }
 
 // CheckoutFile checks out the file for the given commit
-func (c *Git) CheckoutFile(commitSha, fileName string) error {
-	return c.RunGitCmdFromStr(fmt.Sprintf("checkout %s %s", commitSha, fileName))
+func (c *WorktreeMgr) CheckoutFile(commitSha, fileName string) error {
+	return c.commander.RunGitCmdFromStr(fmt.Sprintf("checkout %s %s", commitSha, fileName))
 }
 
 // DiscardAnyUnstagedFileChanges discards any unstages file changes via `git checkout -- .`
-func (c *Git) DiscardAnyUnstagedFileChanges() error {
-	return c.RunGitCmdFromStr("checkout -- .")
+func (c *WorktreeMgr) DiscardAnyUnstagedFileChanges() error {
+	return c.commander.RunGitCmdFromStr("checkout -- .")
 }
 
 // RemoveTrackedFiles will delete the given file(s) even if they are currently tracked
-func (c *Git) RemoveTrackedFiles(name string) error {
-	return c.RunGitCmdFromStr(fmt.Sprintf("rm -r --cached %s", name))
+func (c *WorktreeMgr) RemoveTrackedFiles(name string) error {
+	return c.commander.RunGitCmdFromStr(fmt.Sprintf("rm -r --cached %s", name))
 }
 
 // RemoveUntrackedFiles runs `git clean -fd`
-func (c *Git) RemoveUntrackedFiles() error {
-	return c.RunGitCmdFromStr("clean -fd")
+func (c *WorktreeMgr) RemoveUntrackedFiles() error {
+	return c.commander.RunGitCmdFromStr("clean -fd")
 }
 
 // ResetAndClean removes all unstaged changes and removes all untracked files
-func (c *Git) ResetAndClean() error {
-	submoduleConfigs, err := c.GetSubmoduleConfigs()
+func (c *WorktreeMgr) ResetAndClean() error {
+	submoduleConfigs, err := c.submodulesMgr.GetSubmoduleConfigs()
 	if err != nil {
 		return err
 	}
 
 	if len(submoduleConfigs) > 0 {
-		if err := c.ResetSubmodules(submoduleConfigs); err != nil {
+		if err := c.submodulesMgr.ResetSubmodules(submoduleConfigs); err != nil {
 			return err
 		}
 	}
 
-	if err := c.Branches().ResetToRef("HEAD", HARD, ResetToRefOpts{}); err != nil {
+	if err := c.branchesMgr.ResetToRef("HEAD", HARD, ResetToRefOpts{}); err != nil {
 		return err
 	}
 
 	return c.RemoveUntrackedFiles()
 }
 
-func (c *Git) EditFileCmdObj(filename string) (ICmdObj, error) {
+func (c *WorktreeMgr) EditFileCmdObj(filename string) (ICmdObj, error) {
 	editor := c.config.GetUserConfig().OS.EditCommand
 
 	if editor == "" {
-		editor = c.GetConfigValue("core.editor")
+		editor = c.config.GetConfigValue("core.editor")
 	}
 
 	if editor == "" {
-		editor = c.GetOS().Getenv("GIT_EDITOR")
+		editor = c.os.Getenv("GIT_EDITOR")
 	}
 	if editor == "" {
-		editor = c.GetOS().Getenv("VISUAL")
+		editor = c.os.Getenv("VISUAL")
 	}
 	if editor == "" {
-		editor = c.GetOS().Getenv("EDITOR")
+		editor = c.os.Getenv("EDITOR")
 	}
 	if editor == "" {
-		if err := c.Run(oscommands.NewCmdObjFromStr("which vi")); err == nil {
+		if err := c.commander.Run(oscommands.NewCmdObjFromStr("which vi")); err == nil {
 			editor = "vi"
 		}
 	}
@@ -300,7 +304,7 @@ func (c *Git) EditFileCmdObj(filename string) (ICmdObj, error) {
 		return nil, errors.New("No editor defined in config file, $GIT_EDITOR, $VISUAL, $EDITOR, or git config")
 	}
 
-	cmdObj := c.BuildShellCmdObj(fmt.Sprintf("%s %s", editor, c.GetOS().Quote(filename)))
+	cmdObj := c.commander.BuildShellCmdObj(fmt.Sprintf("%s %s", editor, c.commander.Quote(filename)))
 
 	return cmdObj, nil
 }

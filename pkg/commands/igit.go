@@ -15,6 +15,7 @@ type IGit interface {
 	Branches() IBranchesMgr
 	Commits() ICommitsMgr
 	Worktree() IWorktreeMgr
+	Submodules() ISubmodulesMgr
 
 	// config
 	IGitConfigMgr
@@ -27,15 +28,6 @@ type IGit interface {
 	ShowFileDiff(from string, to string, reverse bool, fileName string, plain bool) (string, error)
 	ShowFileDiffCmdObj(from string, to string, reverse bool, path string, plain bool, showRenames bool) ICmdObj
 	DiffEndArgs(from string, to string, reverse bool, path string) string
-
-	EditFileCmdObj(filename string) (ICmdObj, error)
-
-	// worktree
-	CheckoutFile(commitSha, fileName string) error
-	DiscardAnyUnstagedFileChanges() error
-	RemoveTrackedFiles(name string) error
-	RemoveUntrackedFiles() error
-	ResetAndClean() error
 
 	// commands
 	ICommander
@@ -109,21 +101,6 @@ type IGit interface {
 	IsInMergeState() (bool, error)
 	IsBareRepo() bool
 	IsHeadDetached() bool
-
-	// submodules
-	GetSubmoduleConfigs() ([]*models.SubmoduleConfig, error)
-	SubmoduleStash(submodule *models.SubmoduleConfig) error
-	SubmoduleReset(submodule *models.SubmoduleConfig) error
-	SubmoduleDelete(submodule *models.SubmoduleConfig) error
-	SubmoduleAdd(name string, path string, url string) error
-	SubmoduleUpdateUrl(name string, path string, newUrl string) error
-	SubmoduleInit(path string) error
-	SubmoduleUpdate(path string) error
-	SubmoduleBulkInitCmdObj() ICmdObj
-	SubmoduleBulkUpdateCmdObj() ICmdObj
-	SubmoduleForceBulkUpdateCmdObj() ICmdObj
-	SubmoduleBulkDeinitCmdObj() ICmdObj
-	ResetSubmodules(submodules []*models.SubmoduleConfig) error
 
 	// sync
 	Push(opts PushOpts) (bool, error)
