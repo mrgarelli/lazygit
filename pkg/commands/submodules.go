@@ -14,19 +14,19 @@ import (
 )
 
 type ISubmodulesMgr interface {
-	GetSubmoduleConfigs() ([]*models.SubmoduleConfig, error)
-	SubmoduleStash(submodule *models.SubmoduleConfig) error
-	SubmoduleReset(submodule *models.SubmoduleConfig) error
-	SubmoduleDelete(submodule *models.SubmoduleConfig) error
-	SubmoduleAdd(name string, path string, url string) error
-	SubmoduleUpdateUrl(name string, path string, newUrl string) error
-	SubmoduleInit(path string) error
-	SubmoduleUpdate(path string) error
-	SubmoduleBulkInitCmdObj() ICmdObj
-	SubmoduleBulkUpdateCmdObj() ICmdObj
-	SubmoduleForceBulkUpdateCmdObj() ICmdObj
-	SubmoduleBulkDeinitCmdObj() ICmdObj
-	ResetSubmodules(submodules []*models.SubmoduleConfig) error
+	GetConfigs() ([]*models.SubmoduleConfig, error)
+	Stash(submodule *models.SubmoduleConfig) error
+	Reset(submodule *models.SubmoduleConfig) error
+	StashAndReset(submodules []*models.SubmoduleConfig) error
+	Delete(submodule *models.SubmoduleConfig) error
+	Add(name string, path string, url string) error
+	UpdateUrl(name string, path string, newUrl string) error
+	Init(path string) error
+	Update(path string) error
+	BulkInitCmdObj() ICmdObj
+	BulkUpdateCmdObj() ICmdObj
+	ForceBulkUpdateCmdObj() ICmdObj
+	BulkDeinitCmdObj() ICmdObj
 }
 
 type SubmodulesMgr struct {
@@ -49,7 +49,7 @@ func NewSubmodulesMgr(commander ICommander, config IGitConfigMgr, log *logrus.En
 // [submodule "mysubmodule"]
 //   path = blah/mysubmodule
 //   url = git@github.com:subbo.git
-func (c *SubmodulesMgr) GetSubmoduleConfigs() ([]*models.SubmoduleConfig, error) {
+func (c *SubmodulesMgr) GetConfigs() ([]*models.SubmoduleConfig, error) {
 	file, err := os.Open(".gitmodules")
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -95,7 +95,7 @@ func (c *SubmodulesMgr) GetSubmoduleConfigs() ([]*models.SubmoduleConfig, error)
 	return configs, nil
 }
 
-func (c *SubmodulesMgr) SubmoduleStash(submodule *models.SubmoduleConfig) error {
+func (c *SubmodulesMgr) Stash(submodule *models.SubmoduleConfig) error {
 	// if the path does not exist then it hasn't yet been initialized so we'll swallow the error
 	// because the intention here is to have no dirty worktree state
 	if _, err := os.Stat(submodule.Path); os.IsNotExist(err) {
@@ -106,11 +106,7 @@ func (c *SubmodulesMgr) SubmoduleStash(submodule *models.SubmoduleConfig) error 
 	return c.commander.RunGitCmdFromStr(fmt.Sprintf("-C %s stash --include-untracked", submodule.Path))
 }
 
-func (c *SubmodulesMgr) SubmoduleReset(submodule *models.SubmoduleConfig) error {
-	return c.commander.RunGitCmdFromStr(fmt.Sprintf("submodule update --init --force %s", submodule.Path))
-}
-
-func (c *SubmodulesMgr) SubmoduleDelete(submodule *models.SubmoduleConfig) error {
+func (c *SubmodulesMgr) Delete(submodule *models.SubmoduleConfig) error {
 	// based on https://gist.github.com/myusuf3/7f645819ded92bda6677
 
 	if err := c.commander.RunGitCmdFromStr(fmt.Sprintf("submodule deinit --force %s", submodule.Path)); err != nil {
@@ -137,7 +133,7 @@ func (c *SubmodulesMgr) SubmoduleDelete(submodule *models.SubmoduleConfig) error
 	return os.RemoveAll(filepath.Join(c.dotGitDir, "modules", submodule.Path))
 }
 
-func (c *SubmodulesMgr) SubmoduleAdd(name string, path string, url string) error {
+func (c *SubmodulesMgr) Add(name string, path string, url string) error {
 	return c.commander.RunGitCmdFromStr(
 		fmt.Sprintf(
 			"submodule add --force --name %s -- %s %s ",
@@ -148,7 +144,7 @@ func (c *SubmodulesMgr) SubmoduleAdd(name string, path string, url string) error
 	)
 }
 
-func (c *SubmodulesMgr) SubmoduleUpdateUrl(name string, path string, newUrl string) error {
+func (c *SubmodulesMgr) UpdateUrl(name string, path string, newUrl string) error {
 	// the set-url command is only for later git versions so we're doing it manually here
 	if err := c.commander.RunGitCmdFromStr(fmt.Sprintf("config --file .gitmodules submodule.%s.url %s", name, newUrl)); err != nil {
 		return err
@@ -161,37 +157,41 @@ func (c *SubmodulesMgr) SubmoduleUpdateUrl(name string, path string, newUrl stri
 	return nil
 }
 
-func (c *SubmodulesMgr) SubmoduleInit(path string) error {
+func (c *SubmodulesMgr) Init(path string) error {
 	return c.commander.RunGitCmdFromStr(fmt.Sprintf("submodule init %s", path))
 }
 
-func (c *SubmodulesMgr) SubmoduleUpdate(path string) error {
+func (c *SubmodulesMgr) Update(path string) error {
 	return c.commander.RunGitCmdFromStr(fmt.Sprintf("submodule update --init %s", path))
 }
 
-func (c *SubmodulesMgr) SubmoduleBulkInitCmdObj() ICmdObj {
+func (c *SubmodulesMgr) BulkInitCmdObj() ICmdObj {
 	return BuildGitCmdObjFromStr("submodule init")
 }
 
-func (c *SubmodulesMgr) SubmoduleBulkUpdateCmdObj() ICmdObj {
+func (c *SubmodulesMgr) BulkUpdateCmdObj() ICmdObj {
 	return BuildGitCmdObjFromStr("submodule update")
 }
 
-func (c *SubmodulesMgr) SubmoduleForceBulkUpdateCmdObj() ICmdObj {
+func (c *SubmodulesMgr) ForceBulkUpdateCmdObj() ICmdObj {
 	// not doing an --init here because the user probably doesn't want that
 	return BuildGitCmdObjFromStr("submodule update --force")
 }
 
-func (c *SubmodulesMgr) SubmoduleBulkDeinitCmdObj() ICmdObj {
+func (c *SubmodulesMgr) BulkDeinitCmdObj() ICmdObj {
 	return BuildGitCmdObjFromStr("submodule deinit --all --force")
 }
 
-func (c *SubmodulesMgr) ResetSubmodules(submodules []*models.SubmoduleConfig) error {
+func (c *SubmodulesMgr) StashAndReset(submodules []*models.SubmoduleConfig) error {
 	for _, submodule := range submodules {
-		if err := c.SubmoduleStash(submodule); err != nil {
+		if err := c.Stash(submodule); err != nil {
 			return err
 		}
 	}
 
-	return c.commander.Run(c.SubmoduleForceBulkUpdateCmdObj())
+	return c.commander.Run(c.ForceBulkUpdateCmdObj())
+}
+
+func (c *SubmodulesMgr) Reset(submodule *models.SubmoduleConfig) error {
+	return c.commander.RunGitCmdFromStr(fmt.Sprintf("submodule update --init --force %s", submodule.Path))
 }

@@ -261,13 +261,13 @@ func (c *WorktreeMgr) RemoveUntrackedFiles() error {
 
 // ResetAndClean removes all unstaged changes and removes all untracked files
 func (c *WorktreeMgr) ResetAndClean() error {
-	submoduleConfigs, err := c.submodulesMgr.GetSubmoduleConfigs()
+	submoduleConfigs, err := c.submodulesMgr.GetConfigs()
 	if err != nil {
 		return err
 	}
 
 	if len(submoduleConfigs) > 0 {
-		if err := c.submodulesMgr.ResetSubmodules(submoduleConfigs); err != nil {
+		if err := c.submodulesMgr.StashAndReset(submoduleConfigs); err != nil {
 			return err
 		}
 	}
