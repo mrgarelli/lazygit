@@ -71,7 +71,7 @@ func NewGit(log *logrus.Entry, oS *oscommands.OS, tr *i18n.TranslationSet, confi
 
 	commander := NewCommander(oS.RunWithOutput, log, oS.GetLazygitPath(), oS.Quote)
 	gitConfig := NewGitConfigMgr(commander, config.GetUserConfig(), config.GetUserConfigDir(), getGitConfigValue, log)
-	branchesMgr := NewBranchesMgr(commander, gitConfig)
+	branchesMgr := NewBranchesMgr(commander, gitConfig, log)
 	submodulesMgr := NewSubmodulesMgr(commander, gitConfig, log, dotGitDir)
 	worktreeMgr := NewWorktreeMgr(commander, gitConfig, branchesMgr, submodulesMgr, log, oS)
 	statusMgr := NewStatusMgr(commander, oS, repo, dotGitDir, log)

@@ -5,9 +5,11 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/jesseduffield/lazygit/pkg/commands/models"
 	"github.com/jesseduffield/lazygit/pkg/commands/oscommands"
 	. "github.com/jesseduffield/lazygit/pkg/commands/types"
 	"github.com/jesseduffield/lazygit/pkg/utils"
+	"github.com/sirupsen/logrus"
 )
 
 //counterfeiter:generate . IBranchesMgr
@@ -24,18 +26,27 @@ type IBranchesMgr interface {
 	SetUpstream(upstream string, branchName string) error
 	RenameBranch(oldName string, newName string) error
 	ResetToRef(ref string, strength ResetStrength, opts ResetToRefOpts) error
+	GetBranches(reflogCommits []*models.Commit) []*models.Branch
 }
 
 type BranchesMgr struct {
+	*BranchListBuilder
 	commander ICommander
 	config    IGitConfigMgr
+	log       *logrus.Entry
 }
 
-func NewBranchesMgr(commander ICommander, config IGitConfigMgr) *BranchesMgr {
-	return &BranchesMgr{
+func NewBranchesMgr(commander ICommander, config IGitConfigMgr, log *logrus.Entry) *BranchesMgr {
+	mgr := &BranchesMgr{
 		commander: commander,
 		config:    config,
 	}
+
+	branchListBuilder := NewBranchListBuilder(commander, mgr.CurrentBranchName, log)
+
+	mgr.BranchListBuilder = branchListBuilder
+
+	return mgr
 }
 
 // NewBranch create new branch
