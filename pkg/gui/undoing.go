@@ -184,14 +184,14 @@ func (gui *Gui) handleHardResetWithAutoStash(commitSha string, options handleHar
 			Prompt: gui.Tr.AutoStashPrompt,
 			HandleConfirm: func() error {
 				return gui.WithWaitingStatus(options.WaitingStatus, func() error {
-					if err := gitCommand.StashSave(gui.Tr.StashPrefix + commitSha); err != nil {
+					if err := gitCommand.Stash().Save(gui.Tr.StashPrefix + commitSha); err != nil {
 						return gui.SurfaceError(err)
 					}
 					if err := reset(); err != nil {
 						return err
 					}
 
-					err := gitCommand.StashDo(0, "pop")
+					err := gitCommand.Stash().Do(0, "pop")
 					if err := gui.RefreshSidePanels(RefreshOptions{}); err != nil {
 						return err
 					}

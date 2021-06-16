@@ -24,7 +24,7 @@ func (gui *Gui) handleStashEntrySelect() error {
 		task = NewRenderStringTask(gui.Tr.NoStashEntries)
 	} else {
 		task = NewRunPtyTask(
-			gui.Git.ShowStashEntryCmdObj(stashEntry.Index),
+			gui.Git.Stash().ShowEntryCmdObj(stashEntry.Index),
 		)
 	}
 
@@ -106,7 +106,7 @@ func (gui *Gui) stashDo(method string) error {
 
 		return gui.CreateErrorPanel(errorMessage)
 	}
-	if err := gui.Git.WithSpan(gui.Tr.Spans.Stash).StashDo(stashEntry.Index, method); err != nil {
+	if err := gui.Git.WithSpan(gui.Tr.Spans.Stash).Stash().Do(stashEntry.Index, method); err != nil {
 		return gui.SurfaceError(err)
 	}
 	return gui.RefreshSidePanels(RefreshOptions{Scope: []RefreshableView{STASH, FILES}})

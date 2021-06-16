@@ -17,6 +17,7 @@ type IGit interface {
 	Worktree() IWorktreeMgr
 	Submodules() ISubmodulesMgr
 	Status() IStatusMgr
+	Stash() IStashMgr
 
 	// config
 	IGitConfigMgr
@@ -89,12 +90,6 @@ type IGit interface {
 	DeleteRemoteRef(remoteName string, ref string) error
 	CheckRemoteBranchExists(branch *models.Branch) bool
 	GetRemoteURL() string
-
-	// stash
-	StashDo(index int, method string) error
-	StashSave(message string) error
-	ShowStashEntryCmdObj(index int) ICmdObj
-	StashSaveStagedChanges(message string) error
 
 	// sync
 	Push(opts PushOpts) (bool, error)

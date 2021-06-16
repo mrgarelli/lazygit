@@ -136,7 +136,7 @@ func (c *Git) MovePatchToSelectedCommit(commits []*models.Commit, sourceCommitId
 
 func (c *Git) MovePatchIntoIndex(commits []*models.Commit, commitIdx int, p *patch.PatchManager, stash bool) error {
 	if stash {
-		if err := c.StashSave(c.tr.StashPrefix + commits[commitIdx].Sha); err != nil {
+		if err := c.Stash().Save(c.tr.StashPrefix + commits[commitIdx].Sha); err != nil {
 			return err
 		}
 	}
@@ -175,7 +175,7 @@ func (c *Git) MovePatchIntoIndex(commits []*models.Commit, commitIdx int, p *pat
 		}
 
 		if stash {
-			if err := c.StashDo(0, "apply"); err != nil {
+			if err := c.Stash().Do(0, "apply"); err != nil {
 				return err
 			}
 		}

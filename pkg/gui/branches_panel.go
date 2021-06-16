@@ -179,7 +179,7 @@ func (gui *Gui) handleCheckoutRef(ref string, options handleCheckoutRefOptions) 
 					Title:  gui.Tr.AutoStashTitle,
 					Prompt: gui.Tr.AutoStashPrompt,
 					HandleConfirm: func() error {
-						if err := gitCommand.StashSave(gui.Tr.StashPrefix + ref); err != nil {
+						if err := gitCommand.Stash().Save(gui.Tr.StashPrefix + ref); err != nil {
 							return gui.SurfaceError(err)
 						}
 						if err := gitCommand.Branches().Checkout(ref, cmdOptions); err != nil {
@@ -187,7 +187,7 @@ func (gui *Gui) handleCheckoutRef(ref string, options handleCheckoutRefOptions) 
 						}
 
 						onSuccess()
-						if err := gitCommand.StashDo(0, "pop"); err != nil {
+						if err := gitCommand.Stash().Do(0, "pop"); err != nil {
 							if err := gui.RefreshSidePanels(RefreshOptions{Mode: BLOCK_UI}); err != nil {
 								return err
 							}

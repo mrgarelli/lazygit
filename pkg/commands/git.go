@@ -37,6 +37,7 @@ type Git struct {
 	worktreeMgr          *WorktreeMgr
 	submodulesMgr        *SubmodulesMgr
 	statusMgr            *StatusMgr
+	stashMgr             *StashMgr
 	log                  *logrus.Entry
 	os                   oscommands.IOS
 	repo                 *gogit.Repository
@@ -76,6 +77,7 @@ func NewGit(log *logrus.Entry, oS *oscommands.OS, tr *i18n.TranslationSet, confi
 	worktreeMgr := NewWorktreeMgr(commander, gitConfig, branchesMgr, submodulesMgr, log, oS)
 	statusMgr := NewStatusMgr(commander, oS, repo, dotGitDir, log)
 	commitsMgr := NewCommitsMgr(commander, gitConfig, branchesMgr, statusMgr, log, oS, tr, dotGitDir)
+	stashMgr := NewStashMgr(commander, gitConfig, oS, worktreeMgr)
 
 	gitCommand := &Git{
 		Commander:     commander,
@@ -85,6 +87,7 @@ func NewGit(log *logrus.Entry, oS *oscommands.OS, tr *i18n.TranslationSet, confi
 		worktreeMgr:   worktreeMgr,
 		submodulesMgr: submodulesMgr,
 		statusMgr:     statusMgr,
+		stashMgr:      stashMgr,
 		log:           log,
 		os:            oS,
 		tr:            tr,
@@ -114,6 +117,10 @@ func (c *Git) Submodules() ISubmodulesMgr {
 
 func (c *Git) Status() IStatusMgr {
 	return c.statusMgr
+}
+
+func (c *Git) Stash() IStashMgr {
+	return c.stashMgr
 }
 
 func (c *Git) Quote(str string) string {

@@ -737,13 +737,13 @@ func (gui *Gui) handleCreateStashMenu() error {
 		{
 			displayString: gui.Tr.LcStashAllChanges,
 			onPress: func() error {
-				return gui.handleStashSave(gui.Git.WithSpan(gui.Tr.Spans.StashAllChanges).StashSave)
+				return gui.handleStashSave(gui.Git.WithSpan(gui.Tr.Spans.StashAllChanges).Stash().Save)
 			},
 		},
 		{
 			displayString: gui.Tr.LcStashStagedChanges,
 			onPress: func() error {
-				return gui.handleStashSave(gui.Git.WithSpan(gui.Tr.Spans.StashStagedChanges).StashSaveStagedChanges)
+				return gui.handleStashSave(gui.Git.WithSpan(gui.Tr.Spans.StashStagedChanges).Stash().SaveStagedChanges)
 			},
 		},
 	}
@@ -752,7 +752,7 @@ func (gui *Gui) handleCreateStashMenu() error {
 }
 
 func (gui *Gui) handleStashChanges() error {
-	return gui.handleStashSave(gui.Git.StashSave)
+	return gui.handleStashSave(gui.Git.Stash().Save)
 }
 
 func (gui *Gui) handleCreateResetToUpstreamMenu() error {
