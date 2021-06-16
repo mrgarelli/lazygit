@@ -39,6 +39,7 @@ type IWorktreeMgr interface {
 }
 
 type WorktreeMgr struct {
+	*loaders.StatusFileLoader
 	commander     ICommander
 	config        IGitConfigMgr
 	log           *logrus.Entry
@@ -48,13 +49,16 @@ type WorktreeMgr struct {
 }
 
 func NewWorktreeMgr(commander ICommander, config IGitConfigMgr, branchesMgr IBranchesMgr, submodulesMgr ISubmodulesMgr, log *logrus.Entry, oS *oscommands.OS) *WorktreeMgr {
+	loader := loaders.NewStatusFileLoader(commander, config, log, oS)
+
 	return &WorktreeMgr{
-		commander:     commander,
-		config:        config,
-		branchesMgr:   branchesMgr,
-		submodulesMgr: submodulesMgr,
-		os:            oS,
-		log:           log,
+		StatusFileLoader: loader,
+		commander:        commander,
+		config:           config,
+		branchesMgr:      branchesMgr,
+		submodulesMgr:    submodulesMgr,
+		os:               oS,
+		log:              log,
 	}
 }
 
@@ -307,8 +311,4 @@ func (c *WorktreeMgr) EditFileCmdObj(filename string) (ICmdObj, error) {
 	cmdObj := c.commander.BuildShellCmdObj(fmt.Sprintf("%s %s", editor, c.commander.Quote(filename)))
 
 	return cmdObj, nil
-}
-
-func (c *WorktreeMgr) GetStatusFiles(opts loaders.LoadStatusFilesOpts) []*models.File {
-	return loaders.NewStatusFileLoader(c.commander, c.config, c.log, c.os).Load(opts)
 }

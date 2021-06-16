@@ -34,7 +34,7 @@ func NewStatusFileLoader(commander ICommander, config IGitConfigMgr, log *logrus
 	}
 }
 
-func (c *StatusFileLoader) Load(opts LoadStatusFilesOpts) []*models.File {
+func (c *StatusFileLoader) GetStatusFiles(opts LoadStatusFilesOpts) []*models.File {
 	cmdObj := c.buildCmdObj(opts)
 
 	status, err := c.commander.RunWithOutput(cmdObj)
