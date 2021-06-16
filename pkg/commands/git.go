@@ -36,8 +36,9 @@ type Git struct {
 	*GitConfigMgr
 	commitsMgr           *CommitsMgr
 	branchesMgr          *BranchesMgr
+	worktreeMgr          *WorktreeMgr
 	log                  *logrus.Entry
-	os                   *oscommands.OS
+	os                   oscommands.IOS
 	repo                 *gogit.Repository
 	tr                   *i18n.TranslationSet
 	config               config.AppConfigurer
@@ -72,12 +73,14 @@ func NewGit(log *logrus.Entry, oS *oscommands.OS, tr *i18n.TranslationSet, confi
 	gitConfig := NewGitConfigMgr(commander, config.GetUserConfig(), getGitConfigValue, log)
 	commitsMgr := NewCommitsMgr(commander, gitConfig)
 	branchesMgr := NewBranchesMgr(commander, gitConfig)
+	worktreeMgr := NewWorktreeMgr(commander, gitConfig, oS)
 
 	gitCommand := &Git{
 		Commander:    commander,
 		GitConfigMgr: gitConfig,
 		commitsMgr:   commitsMgr,
 		branchesMgr:  branchesMgr,
+		worktreeMgr:  worktreeMgr,
 		log:          log,
 		os:           oS,
 		tr:           tr,
@@ -95,6 +98,10 @@ func (c *Git) Commits() ICommitsMgr {
 
 func (c *Git) Branches() IBranchesMgr {
 	return c.branchesMgr
+}
+
+func (c *Git) Worktree() IWorktreeMgr {
+	return c.worktreeMgr
 }
 
 func (c *Git) Quote(str string) string {
@@ -236,7 +243,7 @@ func VerifyInGitRepo(osCommand *oscommands.OS) error {
 	)
 }
 
-func (c *Git) GetOS() *oscommands.OS {
+func (c *Git) GetOS() oscommands.IOS {
 	return c.os
 }
 

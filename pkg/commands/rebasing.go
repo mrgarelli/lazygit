@@ -277,3 +277,30 @@ func (c *Git) CherryPickCommits(commits []*models.Commit) error {
 
 	return c.Run(c.InteractiveRebaseCmdObj("HEAD", todo, false))
 }
+
+// DiscardOldFileChanges discards changes to a file from an old commit
+func (c *Git) DiscardOldFileChanges(commits []*models.Commit, commitIndex int, fileName string) error {
+	if err := c.BeginInteractiveRebaseForCommit(commits, commitIndex); err != nil {
+		return err
+	}
+
+	// check if file exists in previous commit (this command returns an error if the file doesn't exist)
+	if err := c.RunGitCmdFromStr(fmt.Sprintf("cat-file -e HEAD^:%s", fileName)); err != nil {
+		if err := c.GetOS().Remove(fileName); err != nil {
+			return err
+		}
+		if err := c.StageFile(fileName); err != nil {
+			return err
+		}
+	} else if err := c.CheckoutFile("HEAD^", fileName); err != nil {
+		return err
+	}
+
+	// amend the commit
+	err := c.Commits().AmendHead()
+	if err != nil {
+		return err
+	}
+
+	return c.ContinueRebase()
+}

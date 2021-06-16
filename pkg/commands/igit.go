@@ -14,11 +14,9 @@ import (
 
 //counterfeiter:generate . IGit
 type IGit interface {
-	// branches
 	Branches() IBranchesMgr
-
-	// commits
 	Commits() ICommitsMgr
+	Worktree() IWorktreeMgr
 
 	// config
 	IGitConfig
@@ -32,11 +30,9 @@ type IGit interface {
 	ShowFileDiffCmdObj(from string, to string, reverse bool, path string, plain bool, showRenames bool) ICmdObj
 	DiffEndArgs(from string, to string, reverse bool, path string) string
 
-	CatFile(fileName string) (string, error)
 	EditFileCmdObj(filename string) (ICmdObj, error)
 
 	// worktree
-	OpenMergeToolCmdObj() ICmdObj
 	StageFile(fileName string) error
 	StageAll() error
 	UnstageAll() error
@@ -49,7 +45,6 @@ type IGit interface {
 	DiscardUnstagedFileChanges(file *models.File) error
 	Ignore(filename string) error
 	CheckoutFile(commitSha, fileName string) error
-	DiscardOldFileChanges(commits []*models.Commit, commitIndex int, fileName string) error
 	DiscardAnyUnstagedFileChanges() error
 	RemoveTrackedFiles(name string) error
 	RemoveUntrackedFiles() error
@@ -87,6 +82,7 @@ type IGit interface {
 	PullPatchIntoNewCommit(commits []*models.Commit, commitIdx int, p *patch.PatchManager) error
 
 	// rebasing
+	DiscardOldFileChanges(commits []*models.Commit, commitIndex int, fileName string) error
 	GenericAbortCmdObj() ICmdObj
 	GenericContinueCmdObj() ICmdObj
 	GenericMergeOrRebaseCmdObj(action string) ICmdObj

@@ -15,12 +15,43 @@ import (
 	"github.com/jesseduffield/lazygit/pkg/utils"
 )
 
-// CatFile obtains the content of a file
-func (c *Git) CatFile(fileName string) (string, error) {
-	return c.GetOS().CatFile(fileName)
+//counterfeiter:generate . IWorktreeMgr
+type IWorktreeMgr interface {
+	OpenMergeToolCmdObj() ICmdObj
+	// StageFile(fileName string) error
+	// StageAll() error
+	// UnstageAll() error
+	// UnStageFile(fileNames []string, reset bool) error
+	// BeforeAndAfterFileForRename(file *models.File) (*models.File, *models.File, error)
+	// DiscardAllFileChanges(file *models.File) error
+	// DiscardAllDirChanges(node *filetree.FileNode) error
+	// DiscardUnstagedDirChanges(node *filetree.FileNode) error
+	// RemoveUntrackedDirFiles(node *filetree.FileNode) error
+	// DiscardUnstagedFileChanges(file *models.File) error
+	// Ignore(filename string) error
+	// CheckoutFile(commitSha, fileName string) error
+	// DiscardOldFileChanges(commits []*models.Commit, commitIndex int, fileName string) error
+	// DiscardAnyUnstagedFileChanges() error
+	// RemoveTrackedFiles(name string) error
+	// RemoveUntrackedFiles() error
+	// ResetAndClean() error
+	// GetStatusFiles(opts loaders.LoadStatusFilesOpts) []*models.File
 }
 
-func (c *Git) OpenMergeToolCmdObj() ICmdObj {
+type WorktreeMgr struct {
+	commander ICommander
+	config    IGitConfig
+	os        oscommands.IOS
+}
+
+func NewWorktreeMgr(commander ICommander, config IGitConfig, oS *oscommands.OS) *WorktreeMgr {
+	return &WorktreeMgr{
+		commander: commander,
+		config:    config,
+	}
+}
+
+func (c *WorktreeMgr) OpenMergeToolCmdObj() ICmdObj {
 	return BuildGitCmdObjFromStr("mergetool")
 }
 
@@ -204,33 +235,6 @@ func (c *Git) ApplyPatch(patch string, flags ...string) error {
 // CheckoutFile checks out the file for the given commit
 func (c *Git) CheckoutFile(commitSha, fileName string) error {
 	return c.RunGitCmdFromStr(fmt.Sprintf("checkout %s %s", commitSha, fileName))
-}
-
-// DiscardOldFileChanges discards changes to a file from an old commit
-func (c *Git) DiscardOldFileChanges(commits []*models.Commit, commitIndex int, fileName string) error {
-	if err := c.BeginInteractiveRebaseForCommit(commits, commitIndex); err != nil {
-		return err
-	}
-
-	// check if file exists in previous commit (this command returns an error if the file doesn't exist)
-	if err := c.RunGitCmdFromStr(fmt.Sprintf("cat-file -e HEAD^:%s", fileName)); err != nil {
-		if err := c.GetOS().Remove(fileName); err != nil {
-			return err
-		}
-		if err := c.StageFile(fileName); err != nil {
-			return err
-		}
-	} else if err := c.CheckoutFile("HEAD^", fileName); err != nil {
-		return err
-	}
-
-	// amend the commit
-	err := c.Commits().AmendHead()
-	if err != nil {
-		return err
-	}
-
-	return c.ContinueRebase()
 }
 
 // DiscardAnyUnstagedFileChanges discards any unstages file changes via `git checkout -- .`

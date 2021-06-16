@@ -807,7 +807,7 @@ func (gui *Gui) handleOpenMergeTool() error {
 		Title:  gui.Tr.MergeToolTitle,
 		Prompt: gui.Tr.MergeToolPrompt,
 		HandleConfirm: func() error {
-			return gui.runSubprocessWithSuspenseAndRefresh(gui.Git.OpenMergeToolCmdObj())
+			return gui.runSubprocessWithSuspenseAndRefresh(gui.Git.Worktree().OpenMergeToolCmdObj())
 		},
 	})
 }
