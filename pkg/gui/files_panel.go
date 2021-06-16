@@ -322,7 +322,7 @@ func (gui *Gui) handleIgnoreFile() error {
 					return err
 				}
 
-				if err := gitCommand.Ignore(node.GetPath()); err != nil {
+				if err := gitCommand.Worktree().Ignore(node.GetPath()); err != nil {
 					return err
 				}
 				return gui.RefreshSidePanels(RefreshOptions{Scope: []RefreshableView{FILES}})
@@ -334,7 +334,7 @@ func (gui *Gui) handleIgnoreFile() error {
 		return err
 	}
 
-	if err := gitCommand.Ignore(node.GetPath()); err != nil {
+	if err := gitCommand.Worktree().Ignore(node.GetPath()); err != nil {
 		return gui.SurfaceError(err)
 	}
 

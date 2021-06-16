@@ -23,13 +23,11 @@ type IWorktreeMgr interface {
 	StageAll() error
 	UnstageAll() error
 	UnStageFile(fileNames []string, reset bool) error
-	// BeforeAndAfterFileForRename(file *models.File) (*models.File, *models.File, error)
-	// DiscardAllFileChanges(file *models.File) error
-	// DiscardAllDirChanges(node *filetree.FileNode) error
-	// DiscardUnstagedDirChanges(node *filetree.FileNode) error
-	// RemoveUntrackedDirFiles(node *filetree.FileNode) error
-	// DiscardUnstagedFileChanges(file *models.File) error
-	// Ignore(filename string) error
+	DiscardAllFileChanges(file *models.File) error
+	DiscardAllDirChanges(node *filetree.FileNode) error
+	DiscardUnstagedDirChanges(node *filetree.FileNode) error
+	DiscardUnstagedFileChanges(file *models.File) error
+	Ignore(filename string) error
 	// CheckoutFile(commitSha, fileName string) error
 	// DiscardOldFileChanges(commits []*models.Commit, commitIndex int, fileName string) error
 	// DiscardAnyUnstagedFileChanges() error
@@ -91,7 +89,7 @@ func (c *WorktreeMgr) UnStageFile(fileNames []string, reset bool) error {
 	return nil
 }
 
-func (c *Git) BeforeAndAfterFileForRename(file *models.File) (*models.File, *models.File, error) {
+func (c *WorktreeMgr) beforeAndAfterFileForRename(file *models.File) (*models.File, *models.File, error) {
 	if !file.IsRename() {
 		return nil, nil, errors.New("Expected renamed file")
 	}
@@ -100,7 +98,7 @@ func (c *Git) BeforeAndAfterFileForRename(file *models.File) (*models.File, *mod
 	// all files, passing the --no-renames flag and then recursively call the function
 	// again for the before file and after file.
 
-	filesWithoutRenames := c.Worktree().GetStatusFiles(loaders.LoadStatusFilesOpts{NoRenames: true})
+	filesWithoutRenames := c.GetStatusFiles(loaders.LoadStatusFilesOpts{NoRenames: true})
 	var beforeFile *models.File
 	var afterFile *models.File
 	for _, f := range filesWithoutRenames {
@@ -126,9 +124,9 @@ func (c *Git) BeforeAndAfterFileForRename(file *models.File) (*models.File, *mod
 }
 
 // DiscardAllFileChanges directly
-func (c *Git) DiscardAllFileChanges(file *models.File) error {
+func (c *WorktreeMgr) DiscardAllFileChanges(file *models.File) error {
 	if file.IsRename() {
-		beforeFile, afterFile, err := c.BeforeAndAfterFileForRename(file)
+		beforeFile, afterFile, err := c.beforeAndAfterFileForRename(file)
 		if err != nil {
 			return err
 		}
@@ -144,25 +142,25 @@ func (c *Git) DiscardAllFileChanges(file *models.File) error {
 		return nil
 	}
 
-	quotedFileName := c.GetOS().Quote(file.Name)
+	quotedFileName := c.commander.Quote(file.Name)
 
 	if file.ShortStatus == "AA" {
-		if err := c.RunGitCmdFromStr(fmt.Sprintf("checkout --ours --  %s", quotedFileName)); err != nil {
+		if err := c.commander.RunGitCmdFromStr(fmt.Sprintf("checkout --ours --  %s", quotedFileName)); err != nil {
 			return err
 		}
-		if err := c.RunGitCmdFromStr(fmt.Sprintf("add %s", quotedFileName)); err != nil {
+		if err := c.commander.RunGitCmdFromStr(fmt.Sprintf("add %s", quotedFileName)); err != nil {
 			return err
 		}
 		return nil
 	}
 
 	if file.ShortStatus == "DU" {
-		return c.RunGitCmdFromStr(fmt.Sprintf("rm %s", quotedFileName))
+		return c.commander.RunGitCmdFromStr(fmt.Sprintf("rm %s", quotedFileName))
 	}
 
 	// if the file isn't tracked, we assume you want to delete it
 	if file.HasStagedChanges || file.HasMergeConflicts {
-		if err := c.RunGitCmdFromStr(fmt.Sprintf("reset -- %s", quotedFileName)); err != nil {
+		if err := c.commander.RunGitCmdFromStr(fmt.Sprintf("reset -- %s", quotedFileName)); err != nil {
 			return err
 		}
 	}
@@ -172,30 +170,30 @@ func (c *Git) DiscardAllFileChanges(file *models.File) error {
 	}
 
 	if file.Added {
-		return c.GetOS().RemoveFile(file.Name)
+		return c.os.RemoveFile(file.Name)
 	}
 	return c.DiscardUnstagedFileChanges(file)
 }
 
-func (c *Git) DiscardAllDirChanges(node *filetree.FileNode) error {
+func (c *WorktreeMgr) DiscardAllDirChanges(node *filetree.FileNode) error {
 	// this could be more efficient but we would need to handle all the edge cases
 	return node.ForEachFile(c.DiscardAllFileChanges)
 }
 
-func (c *Git) DiscardUnstagedDirChanges(node *filetree.FileNode) error {
-	if err := c.RemoveUntrackedDirFiles(node); err != nil {
+func (c *WorktreeMgr) DiscardUnstagedDirChanges(node *filetree.FileNode) error {
+	if err := c.removeUntrackedDirFiles(node); err != nil {
 		return err
 	}
 
-	quotedPath := c.GetOS().Quote(node.GetPath())
-	if err := c.RunGitCmdFromStr(fmt.Sprintf("checkout -- %s", quotedPath)); err != nil {
+	quotedPath := c.commander.Quote(node.GetPath())
+	if err := c.commander.RunGitCmdFromStr(fmt.Sprintf("checkout -- %s", quotedPath)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *Git) RemoveUntrackedDirFiles(node *filetree.FileNode) error {
+func (c *WorktreeMgr) removeUntrackedDirFiles(node *filetree.FileNode) error {
 	untrackedFilePaths := node.GetPathsMatching(
 		func(n *filetree.FileNode) bool { return n.File != nil && !n.File.GetIsTracked() },
 	)
@@ -211,14 +209,14 @@ func (c *Git) RemoveUntrackedDirFiles(node *filetree.FileNode) error {
 }
 
 // DiscardUnstagedFileChanges directly
-func (c *Git) DiscardUnstagedFileChanges(file *models.File) error {
-	quotedFileName := c.GetOS().Quote(file.Name)
-	return c.RunGitCmdFromStr(fmt.Sprintf("checkout -- %s", quotedFileName))
+func (c *WorktreeMgr) DiscardUnstagedFileChanges(file *models.File) error {
+	quotedFileName := c.commander.Quote(file.Name)
+	return c.commander.RunGitCmdFromStr(fmt.Sprintf("checkout -- %s", quotedFileName))
 }
 
 // Ignore adds a file to the gitignore for the repo
-func (c *Git) Ignore(filename string) error {
-	return c.GetOS().AppendLineToFile(".gitignore", filename)
+func (c *WorktreeMgr) Ignore(filename string) error {
+	return c.os.AppendLineToFile(".gitignore", filename)
 }
 
 func (c *Git) ApplyPatch(patch string, flags ...string) error {

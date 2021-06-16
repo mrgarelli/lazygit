@@ -7,7 +7,6 @@ import (
 	"github.com/jesseduffield/lazygit/pkg/commands/oscommands"
 	"github.com/jesseduffield/lazygit/pkg/commands/patch"
 	. "github.com/jesseduffield/lazygit/pkg/commands/types"
-	"github.com/jesseduffield/lazygit/pkg/gui/filetree"
 	"github.com/sirupsen/logrus"
 )
 
@@ -32,13 +31,6 @@ type IGit interface {
 	EditFileCmdObj(filename string) (ICmdObj, error)
 
 	// worktree
-	BeforeAndAfterFileForRename(file *models.File) (*models.File, *models.File, error)
-	DiscardAllFileChanges(file *models.File) error
-	DiscardAllDirChanges(node *filetree.FileNode) error
-	DiscardUnstagedDirChanges(node *filetree.FileNode) error
-	RemoveUntrackedDirFiles(node *filetree.FileNode) error
-	DiscardUnstagedFileChanges(file *models.File) error
-	Ignore(filename string) error
 	CheckoutFile(commitSha, fileName string) error
 	DiscardAnyUnstagedFileChanges() error
 	RemoveTrackedFiles(name string) error

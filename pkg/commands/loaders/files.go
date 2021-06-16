@@ -18,17 +18,6 @@ type LoadStatusFilesOpts struct {
 	NoRenames bool
 }
 
-type StatusFileLoaderProps interface {
-	GetConfigValue(string) string
-
-	GetLog() *logrus.Entry
-
-	GetOS() oscommands.IOS
-
-	RunWithOutput(ICmdObj) (string, error)
-	BuildGitCmdObjFromStr(string) ICmdObj
-}
-
 type StatusFileLoader struct {
 	commander ICommander
 	config    IGitConfigMgr
