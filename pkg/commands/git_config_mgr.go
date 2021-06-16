@@ -14,7 +14,7 @@ import (
 type getGitConfigValueFunc func(key string) (string, error)
 
 type GitConfigMgr struct {
-	commander ICommander
+	ICommander
 
 	// Push to current determines whether the user has configured to push to the remote branch of the same name as the current or not
 	pushToCurrent bool
@@ -26,7 +26,7 @@ type GitConfigMgr struct {
 
 func NewGitConfigMgr(commander ICommander, userConfig *config.UserConfig, userConfigDir string, getGitConfigValue getGitConfigValueFunc, log *logrus.Entry) *GitConfigMgr {
 	gitConfig := &GitConfigMgr{
-		commander:         commander,
+		ICommander:        commander,
 		getGitConfigValue: getGitConfigValue,
 		userConfig:        userConfig,
 		userConfigDir:     userConfigDir,
@@ -86,7 +86,7 @@ func (c *GitConfigMgr) configuredPager() string {
 	if os.Getenv("PAGER") != "" {
 		return os.Getenv("PAGER")
 	}
-	output, err := c.commander.RunWithOutput(BuildGitCmdObjFromStr("config --get-all core.pager"))
+	output, err := c.RunWithOutput(BuildGitCmdObjFromStr("config --get-all core.pager"))
 	if err != nil {
 		return ""
 	}

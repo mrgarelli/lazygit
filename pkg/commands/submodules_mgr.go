@@ -30,7 +30,8 @@ type ISubmodulesMgr interface {
 }
 
 type SubmodulesMgr struct {
-	commander ICommander
+	ICommander
+
 	config    IGitConfigMgr
 	log       *logrus.Entry
 	dotGitDir string
@@ -38,10 +39,10 @@ type SubmodulesMgr struct {
 
 func NewSubmodulesMgr(commander ICommander, config IGitConfigMgr, log *logrus.Entry, dotGitDir string) *SubmodulesMgr {
 	return &SubmodulesMgr{
-		commander: commander,
-		config:    config,
-		log:       log,
-		dotGitDir: dotGitDir,
+		ICommander: commander,
+		config:     config,
+		log:        log,
+		dotGitDir:  dotGitDir,
 	}
 }
 
@@ -103,19 +104,19 @@ func (c *SubmodulesMgr) Stash(submodule *models.SubmoduleConfig) error {
 		return nil
 	}
 
-	return c.commander.RunGitCmdFromStr(fmt.Sprintf("-C %s stash --include-untracked", submodule.Path))
+	return c.RunGitCmdFromStr(fmt.Sprintf("-C %s stash --include-untracked", submodule.Path))
 }
 
 func (c *SubmodulesMgr) Delete(submodule *models.SubmoduleConfig) error {
 	// based on https://gist.github.com/myusuf3/7f645819ded92bda6677
 
-	if err := c.commander.RunGitCmdFromStr(fmt.Sprintf("submodule deinit --force %s", submodule.Path)); err != nil {
+	if err := c.RunGitCmdFromStr(fmt.Sprintf("submodule deinit --force %s", submodule.Path)); err != nil {
 		if strings.Contains(err.Error(), "did not match any file(s) known to git") {
-			if err := c.commander.RunGitCmdFromStr(fmt.Sprintf("config --file .gitmodules --remove-section submodule.%s", submodule.Name)); err != nil {
+			if err := c.RunGitCmdFromStr(fmt.Sprintf("config --file .gitmodules --remove-section submodule.%s", submodule.Name)); err != nil {
 				return err
 			}
 
-			if err := c.commander.RunGitCmdFromStr(fmt.Sprintf("config --remove-section submodule.%s", submodule.Name)); err != nil {
+			if err := c.RunGitCmdFromStr(fmt.Sprintf("config --remove-section submodule.%s", submodule.Name)); err != nil {
 				return err
 			}
 
@@ -125,7 +126,7 @@ func (c *SubmodulesMgr) Delete(submodule *models.SubmoduleConfig) error {
 		}
 	}
 
-	if err := c.commander.RunGitCmdFromStr(fmt.Sprintf("rm --force -r %s", submodule.Path)); err != nil {
+	if err := c.RunGitCmdFromStr(fmt.Sprintf("rm --force -r %s", submodule.Path)); err != nil {
 		// if the directory isn't there then that's fine
 		c.log.Error(err)
 	}
@@ -134,23 +135,23 @@ func (c *SubmodulesMgr) Delete(submodule *models.SubmoduleConfig) error {
 }
 
 func (c *SubmodulesMgr) Add(name string, path string, url string) error {
-	return c.commander.RunGitCmdFromStr(
+	return c.RunGitCmdFromStr(
 		fmt.Sprintf(
 			"submodule add --force --name %s -- %s %s ",
-			c.commander.Quote(name),
-			c.commander.Quote(url),
-			c.commander.Quote(path),
+			c.Quote(name),
+			c.Quote(url),
+			c.Quote(path),
 		),
 	)
 }
 
 func (c *SubmodulesMgr) UpdateUrl(name string, path string, newUrl string) error {
 	// the set-url command is only for later git versions so we're doing it manually here
-	if err := c.commander.RunGitCmdFromStr(fmt.Sprintf("config --file .gitmodules submodule.%s.url %s", name, newUrl)); err != nil {
+	if err := c.RunGitCmdFromStr(fmt.Sprintf("config --file .gitmodules submodule.%s.url %s", name, newUrl)); err != nil {
 		return err
 	}
 
-	if err := c.commander.RunGitCmdFromStr(fmt.Sprintf("submodule sync %s", path)); err != nil {
+	if err := c.RunGitCmdFromStr(fmt.Sprintf("submodule sync %s", path)); err != nil {
 		return err
 	}
 
@@ -158,11 +159,11 @@ func (c *SubmodulesMgr) UpdateUrl(name string, path string, newUrl string) error
 }
 
 func (c *SubmodulesMgr) Init(path string) error {
-	return c.commander.RunGitCmdFromStr(fmt.Sprintf("submodule init %s", path))
+	return c.RunGitCmdFromStr(fmt.Sprintf("submodule init %s", path))
 }
 
 func (c *SubmodulesMgr) Update(path string) error {
-	return c.commander.RunGitCmdFromStr(fmt.Sprintf("submodule update --init %s", path))
+	return c.RunGitCmdFromStr(fmt.Sprintf("submodule update --init %s", path))
 }
 
 func (c *SubmodulesMgr) BulkInitCmdObj() ICmdObj {
@@ -189,9 +190,9 @@ func (c *SubmodulesMgr) StashAndReset(submodules []*models.SubmoduleConfig) erro
 		}
 	}
 
-	return c.commander.Run(c.ForceBulkUpdateCmdObj())
+	return c.Run(c.ForceBulkUpdateCmdObj())
 }
 
 func (c *SubmodulesMgr) Reset(submodule *models.SubmoduleConfig) error {
-	return c.commander.RunGitCmdFromStr(fmt.Sprintf("submodule update --init --force %s", submodule.Path))
+	return c.RunGitCmdFromStr(fmt.Sprintf("submodule update --init --force %s", submodule.Path))
 }
