@@ -27,7 +27,8 @@ type IStatusMgr interface {
 }
 
 type StatusMgr struct {
-	commander ICommander
+	ICommander
+
 	os        oscommands.IOS
 	repo      *gogit.Repository
 	dotGitDir string
@@ -42,11 +43,11 @@ func NewStatusMgr(
 	log *logrus.Entry,
 ) *StatusMgr {
 	return &StatusMgr{
-		commander: commander,
-		os:        os,
-		repo:      repo,
-		dotGitDir: dotGitDir,
-		log:       log,
+		ICommander: commander,
+		os:         os,
+		repo:       repo,
+		dotGitDir:  dotGitDir,
+		log:        log,
 	}
 }
 
@@ -101,6 +102,6 @@ func (c *StatusMgr) gitDirFileExists(path string) bool {
 }
 
 func (c *StatusMgr) IsHeadDetached() bool {
-	err := c.commander.RunGitCmdFromStr("symbolic-ref -q HEAD")
+	err := c.RunGitCmdFromStr("symbolic-ref -q HEAD")
 	return err != nil
 }

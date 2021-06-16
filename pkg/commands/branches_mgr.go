@@ -30,36 +30,41 @@ type IBranchesMgr interface {
 }
 
 type BranchesMgr struct {
-	*BranchListBuilder
-	commander ICommander
-	config    IGitConfigMgr
-	log       *logrus.Entry
+	ICommander
+
+	branchListBuilder *BranchListBuilder
+	config            IGitConfigMgr
+	log               *logrus.Entry
 }
 
 func NewBranchesMgr(commander ICommander, config IGitConfigMgr, log *logrus.Entry) *BranchesMgr {
 	mgr := &BranchesMgr{
-		commander: commander,
-		config:    config,
+		ICommander: commander,
+		config:     config,
 	}
 
 	branchListBuilder := NewBranchListBuilder(commander, mgr.CurrentBranchName, log)
 
-	mgr.BranchListBuilder = branchListBuilder
+	mgr.branchListBuilder = branchListBuilder
 
 	return mgr
 }
 
+func (c *BranchesMgr) GetBranches(reflogCommits []*models.Commit) []*models.Branch {
+	return c.branchListBuilder.GetBranches(reflogCommits)
+}
+
 // NewBranch create new branch
 func (c *BranchesMgr) NewBranch(name string, base string) error {
-	return c.commander.RunGitCmdFromStr(fmt.Sprintf("checkout -b %s %s", name, base))
+	return c.RunGitCmdFromStr(fmt.Sprintf("checkout -b %s %s", name, base))
 }
 
 // CurrentBranchName get the current branch name and displayname.
 // the first returned string is the name and the second is the displayname
 // e.g. name is 123asdf and displayname is '(HEAD detached at 123asdf)'
 func (c *BranchesMgr) CurrentBranchName() (string, string, error) {
-	branchName, err := c.commander.RunWithOutput(
-		c.commander.BuildGitCmdObjFromStr("symbolic-ref --short HEAD"),
+	branchName, err := c.RunWithOutput(
+		c.BuildGitCmdObjFromStr("symbolic-ref --short HEAD"),
 	)
 
 	if err == nil && branchName != "HEAD\n" {
@@ -67,8 +72,8 @@ func (c *BranchesMgr) CurrentBranchName() (string, string, error) {
 		return trimmedBranchName, trimmedBranchName, nil
 	}
 
-	output, err := c.commander.RunWithOutput(
-		c.commander.BuildGitCmdObjFromStr("branch --contains"),
+	output, err := c.RunWithOutput(
+		c.BuildGitCmdObjFromStr("branch --contains"),
 	)
 	if err != nil {
 		return "", "", err
@@ -112,7 +117,7 @@ func (c *BranchesMgr) Delete(branch string, force bool) error {
 		forceFlag = "-D"
 	}
 
-	return c.commander.RunGitCmdFromStr(fmt.Sprintf("branch %s %s", forceFlag, branch))
+	return c.RunGitCmdFromStr(fmt.Sprintf("branch %s %s", forceFlag, branch))
 }
 
 type MergeOpts struct {
@@ -134,7 +139,7 @@ func (c *BranchesMgr) Merge(branchName string, opts MergeOpts) error {
 
 	cmdStr += " " + branchName
 
-	return c.commander.RunGitCmdFromStr(cmdStr)
+	return c.RunGitCmdFromStr(cmdStr)
 }
 
 // Checkout checks out a branch (or commit), with --force if you set the force arg to true
@@ -149,14 +154,14 @@ func (c *BranchesMgr) Checkout(branch string, options CheckoutOpts) error {
 		forceArg = " --force"
 	}
 
-	cmdObj := c.commander.BuildGitCmdObjFromStr(fmt.Sprintf("checkout%s %s", forceArg, branch))
+	cmdObj := c.BuildGitCmdObjFromStr(fmt.Sprintf("checkout%s %s", forceArg, branch))
 	cmdObj.AddEnvVars(options.EnvVars...)
 
-	return c.commander.Run(cmdObj)
+	return c.Run(cmdObj)
 }
 
 func (c *BranchesMgr) GetUpstream(branchName string) (string, error) {
-	output, err := c.commander.RunWithOutput(
+	output, err := c.RunWithOutput(
 		BuildGitCmdObjFromStr(fmt.Sprintf("rev-parse --abbrev-ref --symbolic-full-name %s@{u}", branchName)),
 	)
 	return strings.TrimSpace(output), err
@@ -164,15 +169,15 @@ func (c *BranchesMgr) GetUpstream(branchName string) (string, error) {
 
 // upstream is of the form remote/branchname
 func (c *BranchesMgr) SetUpstream(upstream string, branchName string) error {
-	return c.commander.RunGitCmdFromStr(fmt.Sprintf("branch --set-upstream-to=%s %s", upstream, branchName))
+	return c.RunGitCmdFromStr(fmt.Sprintf("branch --set-upstream-to=%s %s", upstream, branchName))
 }
 
 func (c *BranchesMgr) RenameBranch(oldName string, newName string) error {
-	return c.commander.RunGitCmdFromStr(fmt.Sprintf("branch --move %s %s", oldName, newName))
+	return c.RunGitCmdFromStr(fmt.Sprintf("branch --move %s %s", oldName, newName))
 }
 
 func (c *BranchesMgr) AbortMerge() error {
-	return c.commander.RunGitCmdFromStr("merge --abort")
+	return c.RunGitCmdFromStr("merge --abort")
 }
 
 type ResetStrength string
@@ -192,5 +197,5 @@ func (c *BranchesMgr) ResetToRef(ref string, strength ResetStrength, options Res
 	cmdObj := BuildGitCmdObjFromStr(fmt.Sprintf("reset --%s %s", string(strength), ref))
 	cmdObj.AddEnvVars(options.EnvVars...)
 
-	return c.commander.Run(cmdObj)
+	return c.Run(cmdObj)
 }

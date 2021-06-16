@@ -18,8 +18,8 @@ type IStashMgr interface {
 
 type StashMgr struct {
 	ICommander
-	IGitConfigMgr
 
+	config           IGitConfigMgr
 	stashEntryLoader *StashEntryLoader
 	os               oscommands.IOS
 	worktreeMgr      IWorktreeMgr
@@ -31,7 +31,7 @@ func NewStashMgr(commander ICommander, config IGitConfigMgr, oS oscommands.IOS, 
 	return &StashMgr{
 		stashEntryLoader: stashEntryLoader,
 		ICommander:       commander,
-		IGitConfigMgr:    config,
+		config:           config,
 		os:               oS,
 		worktreeMgr:      worktreeMgr,
 	}
@@ -54,7 +54,7 @@ func (c *StashMgr) Save(message string) error {
 // GetStashEntryDiff stash diff
 func (c *StashMgr) ShowEntryCmdObj(index int) ICmdObj {
 	return BuildGitCmdObjFromStr(
-		fmt.Sprintf("stash show -p --stat --color=%s stash@{%d}", c.ColorArg(), index),
+		fmt.Sprintf("stash show -p --stat --color=%s stash@{%d}", c.config.ColorArg(), index),
 	)
 }
 

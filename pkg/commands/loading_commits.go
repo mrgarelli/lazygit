@@ -27,11 +27,6 @@ import (
 
 const SEPARATION_CHAR = "|"
 
-type ICommitListBuilder interface {
-	GetCommits(GetCommitsOptions) ([]*models.Commit, error)
-	MergeRebasingCommits(commits []*models.Commit) ([]*models.Commit, error)
-}
-
 // CommitListBuilder returns a list of Branch objects for the current repo
 type CommitListBuilder struct {
 	Log         *logrus.Entry
