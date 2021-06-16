@@ -38,27 +38,31 @@ type IWorktreeMgr interface {
 }
 
 type WorktreeMgr struct {
-	*StatusFileLoader
-	commander     ICommander
-	config        IGitConfigMgr
-	log           *logrus.Entry
-	os            oscommands.IOS
-	branchesMgr   IBranchesMgr
-	submodulesMgr ISubmodulesMgr
+	statusFileListBuilder *StatusFileListBuilder
+	commander             ICommander
+	config                IGitConfigMgr
+	log                   *logrus.Entry
+	os                    oscommands.IOS
+	branchesMgr           IBranchesMgr
+	submodulesMgr         ISubmodulesMgr
 }
 
 func NewWorktreeMgr(commander ICommander, config IGitConfigMgr, branchesMgr IBranchesMgr, submodulesMgr ISubmodulesMgr, log *logrus.Entry, oS *oscommands.OS) *WorktreeMgr {
-	loader := NewStatusFileLoader(commander, config, log, oS)
+	statusFileListBuilder := NewStatusFileListBuilder(commander, config, log, oS)
 
 	return &WorktreeMgr{
-		StatusFileLoader: loader,
-		commander:        commander,
-		config:           config,
-		branchesMgr:      branchesMgr,
-		submodulesMgr:    submodulesMgr,
-		os:               oS,
-		log:              log,
+		statusFileListBuilder: statusFileListBuilder,
+		commander:             commander,
+		config:                config,
+		branchesMgr:           branchesMgr,
+		submodulesMgr:         submodulesMgr,
+		os:                    oS,
+		log:                   log,
 	}
+}
+
+func (c *WorktreeMgr) GetStatusFiles(opts LoadStatusFilesOpts) []*models.File {
+	return c.statusFileListBuilder.GetStatusFiles(opts)
 }
 
 func (c *WorktreeMgr) OpenMergeToolCmdObj() ICmdObj {

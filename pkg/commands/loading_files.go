@@ -18,26 +18,27 @@ type LoadStatusFilesOpts struct {
 	NoRenames bool
 }
 
-type StatusFileLoader struct {
-	commander ICommander
-	config    IGitConfigMgr
-	log       *logrus.Entry
-	os        oscommands.IOS
+type StatusFileListBuilder struct {
+	ICommander
+
+	config IGitConfigMgr
+	log    *logrus.Entry
+	os     oscommands.IOS
 }
 
-func NewStatusFileLoader(commander ICommander, config IGitConfigMgr, log *logrus.Entry, os oscommands.IOS) *StatusFileLoader {
-	return &StatusFileLoader{
-		commander: commander,
-		config:    config,
-		log:       log,
-		os:        os,
+func NewStatusFileListBuilder(commander ICommander, config IGitConfigMgr, log *logrus.Entry, os oscommands.IOS) *StatusFileListBuilder {
+	return &StatusFileListBuilder{
+		ICommander: commander,
+		config:     config,
+		log:        log,
+		os:         os,
 	}
 }
 
-func (c *StatusFileLoader) GetStatusFiles(opts LoadStatusFilesOpts) []*models.File {
+func (c *StatusFileListBuilder) GetStatusFiles(opts LoadStatusFilesOpts) []*models.File {
 	cmdObj := c.buildCmdObj(opts)
 
-	status, err := c.commander.RunWithOutput(cmdObj)
+	status, err := c.RunWithOutput(cmdObj)
 	if err != nil {
 		c.log.Error(err)
 		return []*models.File{}
@@ -58,7 +59,7 @@ func (c *StatusFileLoader) GetStatusFiles(opts LoadStatusFilesOpts) []*models.Fi
 	return files
 }
 
-func (c *StatusFileLoader) fileFromStatusString(statusString string) *models.File {
+func (c *StatusFileListBuilder) fileFromStatusString(statusString string) *models.File {
 	if strings.HasPrefix(statusString, "warning") {
 		c.log.Warningf("warning when calling git status: %s", statusString)
 		return nil
@@ -94,7 +95,7 @@ func (c *StatusFileLoader) fileFromStatusString(statusString string) *models.Fil
 	}
 }
 
-func (c *StatusFileLoader) buildCmdObj(opts LoadStatusFilesOpts) ICmdObj {
+func (c *StatusFileListBuilder) buildCmdObj(opts LoadStatusFilesOpts) ICmdObj {
 	// check if config wants us ignoring untracked files
 	untrackedFilesSetting := c.config.GetConfigValue("status.showUntrackedFiles")
 
@@ -108,10 +109,10 @@ func (c *StatusFileLoader) buildCmdObj(opts LoadStatusFilesOpts) ICmdObj {
 		noRenamesFlag = "--no-renames"
 	}
 
-	return c.commander.BuildGitCmdObjFromStr(fmt.Sprintf("status %s --porcelain -z %s", untrackedFilesArg, noRenamesFlag))
+	return c.BuildGitCmdObjFromStr(fmt.Sprintf("status %s --porcelain -z %s", untrackedFilesArg, noRenamesFlag))
 }
 
-func (*StatusFileLoader) cleanGitStatus(statusLines string) []string {
+func (*StatusFileListBuilder) cleanGitStatus(statusLines string) []string {
 	splitLines := strings.Split(statusLines, "\x00")
 	// if a line starts with 'R' then the next line is the original file.
 	for i := 0; i < len(splitLines)-1; i++ {
