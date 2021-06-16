@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/go-errors/errors"
-	"github.com/jesseduffield/lazygit/pkg/commands/loaders"
 	"github.com/jesseduffield/lazygit/pkg/commands/models"
 	"github.com/jesseduffield/lazygit/pkg/commands/oscommands"
 	. "github.com/jesseduffield/lazygit/pkg/commands/types"
@@ -18,7 +17,7 @@ import (
 
 //counterfeiter:generate . IWorktreeMgr
 type IWorktreeMgr interface {
-	GetStatusFiles(opts loaders.LoadStatusFilesOpts) []*models.File
+	GetStatusFiles(opts LoadStatusFilesOpts) []*models.File
 	OpenMergeToolCmdObj() ICmdObj
 	StageFile(fileName string) error
 	StageAll() error
@@ -39,7 +38,7 @@ type IWorktreeMgr interface {
 }
 
 type WorktreeMgr struct {
-	*loaders.StatusFileLoader
+	*StatusFileLoader
 	commander     ICommander
 	config        IGitConfigMgr
 	log           *logrus.Entry
@@ -49,7 +48,7 @@ type WorktreeMgr struct {
 }
 
 func NewWorktreeMgr(commander ICommander, config IGitConfigMgr, branchesMgr IBranchesMgr, submodulesMgr ISubmodulesMgr, log *logrus.Entry, oS *oscommands.OS) *WorktreeMgr {
-	loader := loaders.NewStatusFileLoader(commander, config, log, oS)
+	loader := NewStatusFileLoader(commander, config, log, oS)
 
 	return &WorktreeMgr{
 		StatusFileLoader: loader,
@@ -107,7 +106,7 @@ func (c *WorktreeMgr) beforeAndAfterFileForRename(file *models.File) (*models.Fi
 	// all files, passing the --no-renames flag and then recursively call the function
 	// again for the before file and after file.
 
-	filesWithoutRenames := c.GetStatusFiles(loaders.LoadStatusFilesOpts{NoRenames: true})
+	filesWithoutRenames := c.GetStatusFiles(LoadStatusFilesOpts{NoRenames: true})
 	var beforeFile *models.File
 	var afterFile *models.File
 	for _, f := range filesWithoutRenames {

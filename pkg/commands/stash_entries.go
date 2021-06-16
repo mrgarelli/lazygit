@@ -3,7 +3,6 @@ package commands
 import (
 	"fmt"
 
-	"github.com/jesseduffield/lazygit/pkg/commands/loaders"
 	. "github.com/jesseduffield/lazygit/pkg/commands/types"
 )
 
@@ -56,7 +55,7 @@ func (c *Git) StashSaveStagedChanges(message string) error {
 	// if you had staged an untracked file, that will now appear as 'AD' in git status
 	// meaning it's deleted in your working tree but added in your index. Given that it's
 	// now safely stashed, we need to remove it.
-	files := c.Worktree().GetStatusFiles(loaders.LoadStatusFilesOpts{})
+	files := c.Worktree().GetStatusFiles(LoadStatusFilesOpts{})
 	for _, file := range files {
 		if file.ShortStatus == "AD" {
 			if err := c.Worktree().UnStageFile(file.Names(), false); err != nil {
