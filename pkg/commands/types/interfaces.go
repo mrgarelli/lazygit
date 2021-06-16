@@ -10,6 +10,7 @@ type IGitConfigMgr interface {
 	UsingGpg() bool
 	GetUserConfig() *config.UserConfig
 	GetPushToCurrent() bool
+	GetUserConfigDir() string
 }
 
 //counterfeiter:generate . ICommander

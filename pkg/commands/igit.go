@@ -60,7 +60,6 @@ type IGit interface {
 	GetTags() ([]*models.Tag, error)
 
 	// patch
-	ApplyPatch(patch string, flags ...string) error
 	NewPatchManager() *patch.PatchManager
 	DeletePatchesFromCommit(commits []*models.Commit, commitIndex int, p *patch.PatchManager) error
 	MovePatchToSelectedCommit(commits []*models.Commit, sourceCommitIdx int, destinationCommitIdx int, p *patch.PatchManager) error

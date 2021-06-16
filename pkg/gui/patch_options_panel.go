@@ -176,7 +176,7 @@ func (gui *Gui) handleApplyPatch(reverse bool) error {
 		span = "Apply patch in reverse"
 	}
 
-	if err := gui.State.Modes.PatchManager.ApplyPatches(gui.Git.WithSpan(span).ApplyPatch, reverse); err != nil {
+	if err := gui.State.Modes.PatchManager.ApplyPatches(gui.Git.WithSpan(span).Worktree().ApplyPatch, reverse); err != nil {
 		return gui.SurfaceError(err)
 	}
 	return gui.RefreshSidePanels(RefreshOptions{Mode: ASYNC})

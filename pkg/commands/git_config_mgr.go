@@ -20,14 +20,16 @@ type GitConfigMgr struct {
 	pushToCurrent bool
 
 	userConfig        *config.UserConfig
+	userConfigDir     string
 	getGitConfigValue getGitConfigValueFunc
 }
 
-func NewGitConfigMgr(commander ICommander, userConfig *config.UserConfig, getGitConfigValue getGitConfigValueFunc, log *logrus.Entry) *GitConfigMgr {
+func NewGitConfigMgr(commander ICommander, userConfig *config.UserConfig, userConfigDir string, getGitConfigValue getGitConfigValueFunc, log *logrus.Entry) *GitConfigMgr {
 	gitConfig := &GitConfigMgr{
 		commander:         commander,
 		getGitConfigValue: getGitConfigValue,
 		userConfig:        userConfig,
+		userConfigDir:     userConfigDir,
 	}
 
 	output, err := commander.RunWithOutput(
@@ -47,6 +49,10 @@ func NewGitConfigMgr(commander ICommander, userConfig *config.UserConfig, getGit
 
 func (c *GitConfigMgr) GetUserConfig() *config.UserConfig {
 	return c.userConfig
+}
+
+func (c *GitConfigMgr) GetUserConfigDir() string {
+	return c.userConfigDir
 }
 
 func (c *GitConfigMgr) GetPager(width int) string {
