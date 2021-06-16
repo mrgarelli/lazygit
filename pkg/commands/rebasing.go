@@ -228,7 +228,7 @@ func (c *Git) ContinueRebase() error {
 }
 
 func (c *Git) MergeOrRebase() string {
-	if c.WorkingTreeState() == "merging" {
+	if c.IsMerging() {
 		return "merge"
 	}
 

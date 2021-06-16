@@ -9,7 +9,6 @@ import (
 
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
-	"github.com/jesseduffield/lazygit/pkg/commands"
 	"github.com/jesseduffield/lazygit/pkg/commands/oscommands"
 	"github.com/jesseduffield/lazygit/pkg/gui/mergeconflicts"
 	. "github.com/jesseduffield/lazygit/pkg/gui/types"
@@ -256,18 +255,22 @@ func (gui *Gui) handleCompleteMerge() error {
 	if err := gui.stageSelectedFile(); err != nil {
 		return err
 	}
+
 	if err := gui.RefreshSidePanels(RefreshOptions{Scope: []RefreshableView{FILES}}); err != nil {
 		return err
 	}
+
 	// if we got conflicts after unstashing, we don't want to call any git
 	// commands to continue rebasing/merging here
-	if gui.Git.WorkingTreeState() == commands.REBASE_MODE_NORMAL {
+	if gui.Git.InNormalWorkingTreeState() {
 		return gui.handleEscapeMerge()
 	}
+
 	// if there are no more files with merge conflicts, we should ask whether the user wants to continue
 	if !gui.anyFilesWithMergeConflicts() {
 		return gui.promptToContinueRebase()
 	}
+
 	return gui.handleEscapeMerge()
 }
 

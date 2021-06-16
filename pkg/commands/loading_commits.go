@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/jesseduffield/lazygit/pkg/commands/models"
 	"github.com/jesseduffield/lazygit/pkg/commands/oscommands"
 	. "github.com/jesseduffield/lazygit/pkg/commands/types"
@@ -100,12 +99,8 @@ func (c *CommitListBuilder) MergeRebasingCommits(commits []*models.Commit) ([]*m
 		}
 	}
 
-	rebaseMode, err := c.Git.RebaseMode()
-	if err != nil {
-		return nil, err
-	}
-
-	if rebaseMode == "" {
+	rebaseMode := c.Git.RebaseMode()
+	if rebaseMode == REBASE_MODE_NONE {
 		// not in rebase mode so return original commits
 		return result, nil
 	}
@@ -125,10 +120,6 @@ func (c *CommitListBuilder) MergeRebasingCommits(commits []*models.Commit) ([]*m
 func (c *CommitListBuilder) GetCommits(opts GetCommitsOptions) ([]*models.Commit, error) {
 	commits := []*models.Commit{}
 	var rebasingCommits []*models.Commit
-	rebaseMode, err := c.Git.RebaseMode()
-	if err != nil {
-		return nil, err
-	}
 
 	if opts.IncludeRebaseCommits && opts.FilterPath == "" {
 		var err error
@@ -163,13 +154,6 @@ func (c *CommitListBuilder) GetCommits(opts GetCommitsOptions) ([]*models.Commit
 		return nil, err
 	}
 
-	if rebaseMode != "" {
-		currentCommit := commits[len(rebasingCommits)]
-		blue := color.New(color.FgYellow)
-		youAreHere := blue.Sprintf("<-- %s ---", c.Tr.YouAreHere)
-		currentCommit.Name = fmt.Sprintf("%s %s", youAreHere, currentCommit.Name)
-	}
-
 	commits, err = c.setCommitMergedStatuses(opts.RefName, commits)
 	if err != nil {
 		return nil, err
@@ -179,9 +163,9 @@ func (c *CommitListBuilder) GetCommits(opts GetCommitsOptions) ([]*models.Commit
 }
 
 // getRebasingCommits obtains the commits that we're in the process of rebasing
-func (c *CommitListBuilder) getRebasingCommits(rebaseMode WorkingTreeState) ([]*models.Commit, error) {
+func (c *CommitListBuilder) getRebasingCommits(rebaseMode RebasingMode) ([]*models.Commit, error) {
 	switch rebaseMode {
-	case REBASE_MODE_MERGING:
+	case REBASE_MODE_NON_INTERACTIVE:
 		return c.getNormalRebasingCommits()
 	case REBASE_MODE_INTERACTIVE:
 		return c.getInteractiveRebasingCommits()

@@ -6,52 +6,58 @@ import (
 	gogit "github.com/jesseduffield/go-git/v5"
 )
 
-type WorkingTreeState string
+type RebasingMode int
 
 const (
-	REBASE_MODE_NORMAL      WorkingTreeState = "normal"
-	REBASE_MODE_INTERACTIVE                  = "interactive"
-	REBASE_MODE_REBASING                     = "rebasing"
-	REBASE_MODE_MERGING                      = "merging"
+	REBASE_MODE_NONE RebasingMode = iota
+	REBASE_MODE_NON_INTERACTIVE
+	REBASE_MODE_INTERACTIVE
 )
 
 // RebaseMode returns "" for non-rebase mode, "normal" for normal rebase
 // and "interactive" for interactive rebase
-func (c *Git) RebaseMode() (WorkingTreeState, error) {
-	exists, err := c.GetOS().FileExists(filepath.Join(c.dotGitDir, "rebase-apply"))
-	if err != nil {
-		return "", err
+func (c *Git) RebaseMode() RebasingMode {
+	if c.gitDirFileExists("rebase-apply") {
+		return REBASE_MODE_NON_INTERACTIVE
 	}
-	if exists {
-		return REBASE_MODE_NORMAL, nil
+
+	if c.gitDirFileExists("rebase-merge") {
+		return REBASE_MODE_INTERACTIVE
 	}
-	exists, err = c.GetOS().FileExists(filepath.Join(c.dotGitDir, "rebase-merge"))
-	if exists {
-		return REBASE_MODE_INTERACTIVE, err
-	} else {
-		return "", err
+
+	return REBASE_MODE_NONE
+}
+
+func (c *Git) IsRebasing() bool {
+	switch c.RebaseMode() {
+	case REBASE_MODE_NON_INTERACTIVE, REBASE_MODE_INTERACTIVE:
+		return true
+	default:
+		return false
 	}
 }
 
-func (c *Git) WorkingTreeState() WorkingTreeState {
-	rebaseMode, _ := c.RebaseMode()
-	if rebaseMode != "" {
-		return REBASE_MODE_REBASING
-	}
-	merging, _ := c.IsInMergeState()
-	if merging {
-		return REBASE_MODE_MERGING
-	}
-	return REBASE_MODE_NORMAL
+// IsMerging states whether we are still mid-merge
+func (c *Git) IsMerging() bool {
+	return c.gitDirFileExists("MERGE_HEAD")
 }
 
-// IsInMergeState states whether we are still mid-merge
-func (c *Git) IsInMergeState() (bool, error) {
-	return c.GetOS().FileExists(filepath.Join(c.dotGitDir, "MERGE_HEAD"))
+func (c *Git) InNormalWorkingTreeState() bool {
+	return !c.IsRebasing() && !c.IsMerging()
 }
 
 func (c *Git) IsBareRepo() bool {
 	// note: could use `git rev-parse --is-bare-repository` if we wanna drop go-git
 	_, err := c.repo.Worktree()
 	return err == gogit.ErrIsBareRepository
+}
+
+func (c *Git) gitDirFileExists(path string) bool {
+	result, err := c.GetOS().FileExists(filepath.Join(c.dotGitDir, path))
+	if err != nil {
+		// swallowing error
+		c.log.Error(err)
+	}
+
+	return result
 }

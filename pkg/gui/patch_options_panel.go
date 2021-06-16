@@ -3,7 +3,6 @@ package gui
 import (
 	"fmt"
 
-	"github.com/jesseduffield/lazygit/pkg/commands"
 	. "github.com/jesseduffield/lazygit/pkg/gui/types"
 )
 
@@ -27,7 +26,7 @@ func (gui *Gui) handleCreatePatchOptionsMenu() error {
 		},
 	}
 
-	if gui.State.Modes.PatchManager.CanRebase && gui.workingTreeState() == commands.REBASE_MODE_NORMAL {
+	if gui.State.Modes.PatchManager.CanRebase && gui.Git.InNormalWorkingTreeState() {
 		menuItems = append(menuItems, []*menuItem{
 			{
 				displayString: fmt.Sprintf("remove patch from original commit (%s)", gui.State.Modes.PatchManager.To),
@@ -75,7 +74,7 @@ func (gui *Gui) getPatchCommitIndex() int {
 }
 
 func (gui *Gui) validateNormalWorkingTreeState() (bool, error) {
-	if gui.Git.WorkingTreeState() != commands.REBASE_MODE_NORMAL {
+	if gui.Git.IsRebasing() || gui.Git.IsMerging() {
 		return false, gui.CreateErrorPanel(gui.Tr.CantPatchWhileRebasingError)
 	}
 	return true, nil

@@ -261,15 +261,15 @@ func (c *Git) GenericContinueCmdObj() ICmdObj {
 }
 
 func (c *Git) GenericMergeOrRebaseCmdObj(action string) ICmdObj {
-	status := c.WorkingTreeState()
-	switch status {
-	case REBASE_MODE_REBASING:
+	if c.IsRebasing() {
 		return BuildGitCmdObjFromStr(fmt.Sprintf("rebase --%s", action))
-	case REBASE_MODE_MERGING:
-		return BuildGitCmdObjFromStr(fmt.Sprintf("merge --%s", action))
-	default:
-		panic("expected rebase mode")
+
 	}
+	if c.IsMerging() {
+		return BuildGitCmdObjFromStr(fmt.Sprintf("merge --%s", action))
+	}
+
+	panic("expected rebase mode")
 }
 
 func (c *Git) IsHeadDetached() bool {

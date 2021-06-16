@@ -3,6 +3,7 @@ package gui
 import (
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
+	"github.com/jesseduffield/lazygit/pkg/commands"
 	"github.com/jesseduffield/lazygit/pkg/gui/presentation"
 	. "github.com/jesseduffield/lazygit/pkg/gui/types"
 	"github.com/jesseduffield/lazygit/pkg/utils"
@@ -165,7 +166,13 @@ func (gui *Gui) branchCommitsListContext() *ListContext {
 		Gui:                        gui,
 		ResetMainViewOriginOnFocus: true,
 		GetDisplayStrings: func() [][]string {
-			return presentation.GetCommitListDisplayStrings(gui.State.Commits, gui.State.ScreenMode != SCREEN_NORMAL, gui.cherryPickedCommitShaMap(), gui.State.Modes.Diffing.Ref)
+			return presentation.GetCommitListDisplayStrings(
+				gui.State.Commits,
+				gui.State.ScreenMode != SCREEN_NORMAL,
+				gui.cherryPickedCommitShaMap(),
+				gui.State.Modes.Diffing.Ref,
+				gui.GetGit().RebaseMode() == commands.REBASE_MODE_INTERACTIVE,
+			)
 		},
 		SelectedItem: func() (ListItem, bool) {
 			item := gui.getSelectedLocalCommit()
@@ -188,7 +195,12 @@ func (gui *Gui) reflogCommitsListContext() *ListContext {
 		Gui:                        gui,
 		ResetMainViewOriginOnFocus: true,
 		GetDisplayStrings: func() [][]string {
-			return presentation.GetReflogCommitListDisplayStrings(gui.State.FilteredReflogCommits, gui.State.ScreenMode != SCREEN_NORMAL, gui.cherryPickedCommitShaMap(), gui.State.Modes.Diffing.Ref)
+			return presentation.GetReflogCommitListDisplayStrings(
+				gui.State.FilteredReflogCommits,
+				gui.State.ScreenMode != SCREEN_NORMAL,
+				gui.cherryPickedCommitShaMap(),
+				gui.State.Modes.Diffing.Ref,
+			)
 		},
 		SelectedItem: func() (ListItem, bool) {
 			item := gui.getSelectedReflogCommit()
@@ -211,7 +223,13 @@ func (gui *Gui) subCommitsListContext() *ListContext {
 		Gui:                        gui,
 		ResetMainViewOriginOnFocus: true,
 		GetDisplayStrings: func() [][]string {
-			return presentation.GetCommitListDisplayStrings(gui.State.SubCommits, gui.State.ScreenMode != SCREEN_NORMAL, gui.cherryPickedCommitShaMap(), gui.State.Modes.Diffing.Ref)
+			return presentation.GetCommitListDisplayStrings(
+				gui.State.SubCommits,
+				gui.State.ScreenMode != SCREEN_NORMAL,
+				gui.cherryPickedCommitShaMap(),
+				gui.State.Modes.Diffing.Ref,
+				false,
+			)
 		},
 		SelectedItem: func() (ListItem, bool) {
 			item := gui.getSelectedSubCommit()

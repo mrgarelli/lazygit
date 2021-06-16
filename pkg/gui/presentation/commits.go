@@ -9,7 +9,13 @@ import (
 	"github.com/jesseduffield/lazygit/pkg/utils"
 )
 
-func GetCommitListDisplayStrings(commits []*models.Commit, fullDescription bool, cherryPickedCommitShaMap map[string]bool, diffName string) [][]string {
+func GetCommitListDisplayStrings(
+	commits []*models.Commit,
+	fullDescription bool,
+	cherryPickedCommitShaMap map[string]bool,
+	diffName string,
+	inInteractiveRebase bool,
+) [][]string {
 	lines := make([][]string, len(commits))
 
 	var displayFunc func(*models.Commit, map[string]bool, bool) []string
@@ -18,6 +24,8 @@ func GetCommitListDisplayStrings(commits []*models.Commit, fullDescription bool,
 	} else {
 		displayFunc = getDisplayStringsForCommit
 	}
+
+
 
 	for i := range commits {
 		diffed := commits[i].Sha == diffName

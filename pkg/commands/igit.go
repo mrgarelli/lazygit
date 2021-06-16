@@ -85,7 +85,7 @@ type IGit interface {
 	RemoveRemote(name string) error
 	RenameRemote(oldRemoteName string, newRemoteName string) error
 	UpdateRemoteUrl(remoteName string, updatedUrl string) error
-	DeleteRemoteRef(remoteName string, branchName string) error
+	DeleteRemoteRef(remoteName string, ref string) error
 	CheckRemoteBranchExists(branch *models.Branch) bool
 	GetRemoteURL() string
 
@@ -96,9 +96,10 @@ type IGit interface {
 	StashSaveStagedChanges(message string) error
 
 	// state/info
-	RebaseMode() (WorkingTreeState, error)
-	WorkingTreeState() WorkingTreeState
-	IsInMergeState() (bool, error)
+	RebaseMode() RebasingMode
+	IsMerging() bool
+	IsRebasing() bool
+	InNormalWorkingTreeState() bool
 	IsBareRepo() bool
 	IsHeadDetached() bool
 
