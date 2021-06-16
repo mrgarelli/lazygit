@@ -5,22 +5,13 @@ import (
 	"strconv"
 	"strings"
 
+	. "github.com/jesseduffield/lazygit/pkg/commands/types"
 	"github.com/jesseduffield/lazygit/pkg/config"
 	"github.com/jesseduffield/lazygit/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
 type getGitConfigValueFunc func(key string) (string, error)
-
-//counterfeiter:generate . IGitConfig
-type IGitConfig interface {
-	GetPager(width int) string
-	ColorArg() string
-	GetConfigValue(key string) string
-	UsingGpg() bool
-	GetUserConfig() *config.UserConfig
-	GetPushToCurrent() bool
-}
 
 type GitConfigMgr struct {
 	commander ICommander

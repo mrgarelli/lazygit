@@ -28,10 +28,10 @@ type IBranchesMgr interface {
 
 type BranchesMgr struct {
 	commander ICommander
-	config    IGitConfig
+	config    IGitConfigMgr
 }
 
-func NewBranchesMgr(commander ICommander, config IGitConfig) *BranchesMgr {
+func NewBranchesMgr(commander ICommander, config IGitConfigMgr) *BranchesMgr {
 	return &BranchesMgr{
 		commander: commander,
 		config:    config,

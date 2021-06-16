@@ -41,12 +41,12 @@ type IWorktreeMgr interface {
 
 type WorktreeMgr struct {
 	commander ICommander
-	config    IGitConfig
+	config    IGitConfigMgr
 	log       *logrus.Entry
 	os        oscommands.IOS
 }
 
-func NewWorktreeMgr(commander ICommander, config IGitConfig, log *logrus.Entry, oS *oscommands.OS) *WorktreeMgr {
+func NewWorktreeMgr(commander ICommander, config IGitConfigMgr, log *logrus.Entry, oS *oscommands.OS) *WorktreeMgr {
 	return &WorktreeMgr{
 		commander: commander,
 		config:    config,

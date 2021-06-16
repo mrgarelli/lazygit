@@ -24,10 +24,10 @@ type ICommitsMgr interface {
 
 type CommitsMgr struct {
 	commander ICommander
-	config    IGitConfig
+	config    IGitConfigMgr
 }
 
-func NewCommitsMgr(commander ICommander, config IGitConfig) *CommitsMgr {
+func NewCommitsMgr(commander ICommander, config IGitConfigMgr) *CommitsMgr {
 	return &CommitsMgr{
 		commander: commander,
 		config:    config,

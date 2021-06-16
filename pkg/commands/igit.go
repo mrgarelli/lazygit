@@ -18,7 +18,7 @@ type IGit interface {
 	Worktree() IWorktreeMgr
 
 	// config
-	IGitConfig
+	IGitConfigMgr
 
 	FindRemoteForBranchInConfig(branchName string) (string, error)
 

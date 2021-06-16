@@ -7,7 +7,6 @@ import (
 	"github.com/jesseduffield/lazygit/pkg/commands/models"
 	"github.com/jesseduffield/lazygit/pkg/commands/oscommands"
 	. "github.com/jesseduffield/lazygit/pkg/commands/types"
-	"github.com/jesseduffield/lazygit/pkg/config"
 	"github.com/jesseduffield/lazygit/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -30,35 +29,14 @@ type StatusFileLoaderProps interface {
 	BuildGitCmdObjFromStr(string) ICmdObj
 }
 
-// duplicating for now
-type ICommander interface {
-	Run(cmdObj ICmdObj) error
-	RunWithOutput(cmdObj ICmdObj) (string, error)
-	RunGitCmdFromStr(cmdStr string) error
-	BuildGitCmdObjFromStr(cmdStr string) ICmdObj
-	BuildShellCmdObj(command string) ICmdObj
-	SkipEditor(cmdObj ICmdObj)
-	Quote(string) string
-}
-
-// duplicating for now
-type IGitConfig interface {
-	GetPager(width int) string
-	ColorArg() string
-	GetConfigValue(key string) string
-	UsingGpg() bool
-	GetUserConfig() *config.UserConfig
-	GetPushToCurrent() bool
-}
-
 type StatusFileLoader struct {
 	commander ICommander
-	config    IGitConfig
+	config    IGitConfigMgr
 	log       *logrus.Entry
 	os        oscommands.IOS
 }
 
-func NewStatusFileLoader(commander ICommander, config IGitConfig, log *logrus.Entry, os oscommands.IOS) *StatusFileLoader {
+func NewStatusFileLoader(commander ICommander, config IGitConfigMgr, log *logrus.Entry, os oscommands.IOS) *StatusFileLoader {
 	return &StatusFileLoader{
 		commander: commander,
 		config:    config,
