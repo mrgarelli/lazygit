@@ -238,7 +238,7 @@ func (c *Git) MergeOrRebase() string {
 // GenericMerge takes a commandType of "merge" or "rebase" and a command of "abort", "skip" or "continue"
 // By default we skip the editor in the case where a commit will be made
 func (c *Git) GenericMergeOrRebaseAction(commandType string, command string) error {
-	cmdObj := oscommands.NewCmdObjFromStr(fmt.Sprintf(
+	cmdObj := c.BuildGitCmdObjFromStr(fmt.Sprintf(
 		"%s --%s",
 		commandType,
 		command,
