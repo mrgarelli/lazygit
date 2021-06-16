@@ -50,7 +50,6 @@ type IGit interface {
 	GetFilesInDiff(from string, to string, reverse bool) ([]*models.CommitFile, error)
 	GetReflogCommits(lastReflogCommit *models.Commit, filterPath string) ([]*models.Commit, bool, error)
 	GetRemotes() ([]*models.Remote, error)
-	GetStashEntries(filterPath string) []*models.StashEntry
 	GetTags() ([]*models.Tag, error)
 
 	// patch

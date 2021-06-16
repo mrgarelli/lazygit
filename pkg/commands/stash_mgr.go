@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 
+	"github.com/jesseduffield/lazygit/pkg/commands/models"
 	"github.com/jesseduffield/lazygit/pkg/commands/oscommands"
 	. "github.com/jesseduffield/lazygit/pkg/commands/types"
 )
@@ -12,22 +13,32 @@ type IStashMgr interface {
 	Save(message string) error
 	ShowEntryCmdObj(index int) ICmdObj
 	SaveStagedChanges(message string) error
+	GetEntries(filterPath string) []*models.StashEntry
 }
 
 type StashMgr struct {
 	ICommander
 	IGitConfigMgr
-	os          oscommands.IOS
-	worktreeMgr IWorktreeMgr
+
+	stashEntryLoader *StashEntryLoader
+	os               oscommands.IOS
+	worktreeMgr      IWorktreeMgr
 }
 
 func NewStashMgr(commander ICommander, config IGitConfigMgr, oS oscommands.IOS, worktreeMgr IWorktreeMgr) *StashMgr {
+	stashEntryLoader := NewStashEntryLoader(commander)
+
 	return &StashMgr{
-		ICommander:    commander,
-		IGitConfigMgr: config,
-		os:            oS,
-		worktreeMgr:   worktreeMgr,
+		stashEntryLoader: stashEntryLoader,
+		ICommander:       commander,
+		IGitConfigMgr:    config,
+		os:               oS,
+		worktreeMgr:      worktreeMgr,
 	}
+}
+
+func (c *StashMgr) GetEntries(filterPath string) []*models.StashEntry {
+	return c.stashEntryLoader.GetEntries(filterPath)
 }
 
 // StashDo modify stash

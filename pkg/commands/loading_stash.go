@@ -6,10 +6,21 @@ import (
 	"strings"
 
 	"github.com/jesseduffield/lazygit/pkg/commands/models"
+	. "github.com/jesseduffield/lazygit/pkg/commands/types"
 	"github.com/jesseduffield/lazygit/pkg/utils"
 )
 
-func (c *Git) getUnfilteredStashEntries() []*models.StashEntry {
+type StashEntryLoader struct {
+	ICommander
+}
+
+func NewStashEntryLoader(commander ICommander) *StashEntryLoader {
+	return &StashEntryLoader{
+		ICommander: commander,
+	}
+}
+
+func (c *StashEntryLoader) getUnfilteredStashEntries() []*models.StashEntry {
 	rawString, _ := c.RunWithOutput(
 		BuildGitCmdObjFromStr("stash list --pretty='%gs'"),
 	)
@@ -21,7 +32,7 @@ func (c *Git) getUnfilteredStashEntries() []*models.StashEntry {
 }
 
 // GetStashEntries stash entries
-func (c *Git) GetStashEntries(filterPath string) []*models.StashEntry {
+func (c *StashEntryLoader) GetEntries(filterPath string) []*models.StashEntry {
 	if filterPath == "" {
 		return c.getUnfilteredStashEntries()
 	}
