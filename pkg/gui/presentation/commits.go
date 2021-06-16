@@ -32,7 +32,7 @@ func GetCommitListDisplayStrings(
 
 	for i, commit := range commits {
 		isCurrentCommit := false
-		if !visitedNonRebaseCommit && !commit.IsRebaseCommit() {
+		if isRebasing && !visitedNonRebaseCommit && !commit.IsRebaseCommit() {
 			visitedNonRebaseCommit = true
 			isCurrentCommit = true
 		}
