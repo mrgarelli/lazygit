@@ -21,7 +21,7 @@ type LoadStatusFilesOpts struct {
 type StatusFileLoaderProps interface {
 	GetConfigValue(string) string
 	GetLog() *logrus.Entry
-	GetOS() *oscommands.OS
+	GetOS() oscommands.IOS
 	RunWithOutput(ICmdObj) (string, error)
 	BuildGitCmdObjFromStr(string) ICmdObj
 }

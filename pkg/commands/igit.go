@@ -59,7 +59,7 @@ type IGit interface {
 	// common
 	GetLog() *logrus.Entry
 	WithSpan(span string) IGit
-	GetOS() *oscommands.OS
+	GetOS() oscommands.IOS
 
 	// flow
 	FlowStart(branchType string, name string) ICmdObj
