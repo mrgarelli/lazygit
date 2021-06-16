@@ -114,9 +114,7 @@ func (gui *Gui) refreshCommitsWithLimit() error {
 	gui.Mutexes.BranchCommitsMutex.Lock()
 	defer gui.Mutexes.BranchCommitsMutex.Unlock()
 
-	builder := commands.NewCommitListBuilder(gui.Log, gui.Git, gui.OS, gui.Tr)
-
-	commits, err := builder.GetCommits(
+	commits, err := gui.Git.Commits().GetCommits(
 		commands.GetCommitsOptions{
 			Limit:                gui.State.Panels.Commits.LimitCommits,
 			FilterPath:           gui.State.Modes.Filtering.GetPath(),
@@ -136,9 +134,7 @@ func (gui *Gui) refreshRebaseCommits() error {
 	gui.Mutexes.BranchCommitsMutex.Lock()
 	defer gui.Mutexes.BranchCommitsMutex.Unlock()
 
-	builder := commands.NewCommitListBuilder(gui.Log, gui.Git, gui.OS, gui.Tr)
-
-	updatedCommits, err := builder.MergeRebasingCommits(gui.State.Commits)
+	updatedCommits, err := gui.Git.Commits().MergeRebasingCommits(gui.State.Commits)
 	if err != nil {
 		return err
 	}

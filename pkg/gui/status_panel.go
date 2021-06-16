@@ -40,9 +40,9 @@ func (gui *Gui) refreshStatus() {
 
 func (gui *Gui) rebasingOrMergingSuffix() string {
 	rebasingOrMergingStatus := ""
-	if gui.Git.IsRebasing() {
+	if gui.Git.Status().IsRebasing() {
 		rebasingOrMergingStatus = "rebasing"
-	} else if gui.Git.IsMerging() {
+	} else if gui.Git.Status().IsMerging() {
 		rebasingOrMergingStatus = "merging"
 	}
 

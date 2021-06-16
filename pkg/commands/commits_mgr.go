@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jesseduffield/lazygit/pkg/commands/oscommands"
 	. "github.com/jesseduffield/lazygit/pkg/commands/types"
+	"github.com/jesseduffield/lazygit/pkg/i18n"
+	"github.com/sirupsen/logrus"
 )
 
 //counterfeiter:generate . ICommitsMgr
@@ -20,17 +23,33 @@ type ICommitsMgr interface {
 	Revert(sha string) error
 	RevertMerge(sha string, parentNumber int) error
 	CreateFixupCommit(sha string) error
+	ICommitListBuilder
 }
 
 type CommitsMgr struct {
+	*CommitListBuilder
 	commander ICommander
 	config    IGitConfigMgr
 }
 
-func NewCommitsMgr(commander ICommander, config IGitConfigMgr) *CommitsMgr {
+func NewCommitsMgr(
+	commander ICommander,
+	config IGitConfigMgr,
+	branchesMgr IBranchesMgr,
+	statusMgr IStatusMgr,
+	log *logrus.Entry,
+	oS *oscommands.OS,
+	tr *i18n.TranslationSet,
+	dotGitDir string,
+) *CommitsMgr {
+	commitListBuilder := NewCommitListBuilder(
+		log, branchesMgr, statusMgr, oS, tr, dotGitDir, commander,
+	)
+
 	return &CommitsMgr{
-		commander: commander,
-		config:    config,
+		CommitListBuilder: commitListBuilder,
+		commander:         commander,
+		config:            config,
 	}
 }
 

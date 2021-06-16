@@ -4,6 +4,9 @@ import (
 	"path/filepath"
 
 	gogit "github.com/jesseduffield/go-git/v5"
+	"github.com/jesseduffield/lazygit/pkg/commands/oscommands"
+	. "github.com/jesseduffield/lazygit/pkg/commands/types"
+	"github.com/sirupsen/logrus"
 )
 
 type RebasingMode int
@@ -14,9 +17,42 @@ const (
 	REBASE_MODE_INTERACTIVE
 )
 
+type IStatusMgr interface {
+	RebaseMode() RebasingMode
+	IsMerging() bool
+	IsRebasing() bool
+	InNormalWorkingTreeState() bool
+	IsBareRepo() bool
+	IsHeadDetached() bool
+}
+
+type StatusMgr struct {
+	commander ICommander
+	os        oscommands.IOS
+	repo      *gogit.Repository
+	dotGitDir string
+	log       *logrus.Entry
+}
+
+func NewStatusMgr(
+	commander ICommander,
+	os oscommands.IOS,
+	repo *gogit.Repository,
+	dotGitDir string,
+	log *logrus.Entry,
+) *StatusMgr {
+	return &StatusMgr{
+		commander: commander,
+		os:        os,
+		repo:      repo,
+		dotGitDir: dotGitDir,
+		log:       log,
+	}
+}
+
 // RebaseMode returns "" for non-rebase mode, "normal" for normal rebase
 // and "interactive" for interactive rebase
-func (c *Git) RebaseMode() RebasingMode {
+func (c *StatusMgr) RebaseMode() RebasingMode {
 	if c.gitDirFileExists("rebase-apply") {
 		return REBASE_MODE_NON_INTERACTIVE
 	}
@@ -28,7 +64,7 @@ func (c *Git) RebaseMode() RebasingMode {
 	return REBASE_MODE_NONE
 }
 
-func (c *Git) IsRebasing() bool {
+func (c *StatusMgr) IsRebasing() bool {
 	switch c.RebaseMode() {
 	case REBASE_MODE_NON_INTERACTIVE, REBASE_MODE_INTERACTIVE:
 		return true
@@ -38,26 +74,33 @@ func (c *Git) IsRebasing() bool {
 }
 
 // IsMerging states whether we are still mid-merge
-func (c *Git) IsMerging() bool {
+func (c *StatusMgr) IsMerging() bool {
 	return c.gitDirFileExists("MERGE_HEAD")
 }
 
-func (c *Git) InNormalWorkingTreeState() bool {
+func (c *StatusMgr) InNormalWorkingTreeState() bool {
 	return !c.IsRebasing() && !c.IsMerging()
 }
 
-func (c *Git) IsBareRepo() bool {
+// arguably this belongs somewhere else. Unlike the other functions in this file,
+// the result of this function will not change unless we switch repos.
+func (c *StatusMgr) IsBareRepo() bool {
 	// note: could use `git rev-parse --is-bare-repository` if we wanna drop go-git
 	_, err := c.repo.Worktree()
 	return err == gogit.ErrIsBareRepository
 }
 
-func (c *Git) gitDirFileExists(path string) bool {
-	result, err := c.GetOS().FileExists(filepath.Join(c.dotGitDir, path))
+func (c *StatusMgr) gitDirFileExists(path string) bool {
+	result, err := c.os.FileExists(filepath.Join(c.dotGitDir, path))
 	if err != nil {
 		// swallowing error
 		c.log.Error(err)
 	}
 
 	return result
+}
+
+func (c *StatusMgr) IsHeadDetached() bool {
+	err := c.commander.RunGitCmdFromStr("symbolic-ref -q HEAD")
+	return err != nil
 }

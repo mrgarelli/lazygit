@@ -262,7 +262,7 @@ func (gui *Gui) handleCompleteMerge() error {
 
 	// if we got conflicts after unstashing, we don't want to call any git
 	// commands to continue rebasing/merging here
-	if gui.Git.InNormalWorkingTreeState() {
+	if gui.Git.Status().InNormalWorkingTreeState() {
 		return gui.handleEscapeMerge()
 	}
 

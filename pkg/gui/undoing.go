@@ -89,7 +89,7 @@ func (gui *Gui) reflogUndo() error {
 	undoEnvVars := []string{"GIT_REFLOG_ACTION=[lazygit undo]"}
 	undoingStatus := gui.Tr.UndoingStatus
 
-	if gui.Git.IsRebasing() {
+	if gui.Git.Status().IsRebasing() {
 		return gui.CreateErrorPanel(gui.Tr.LcCantUndoWhileRebasing)
 	}
 
@@ -124,7 +124,7 @@ func (gui *Gui) reflogRedo() error {
 	redoEnvVars := []string{"GIT_REFLOG_ACTION=[lazygit redo]"}
 	redoingStatus := gui.Tr.RedoingStatus
 
-	if gui.Git.IsRebasing() {
+	if gui.Git.Status().IsRebasing() {
 		return gui.CreateErrorPanel(gui.Tr.LcCantRedoWhileRebasing)
 	}
 

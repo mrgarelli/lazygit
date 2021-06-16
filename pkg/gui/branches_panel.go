@@ -300,7 +300,7 @@ func (gui *Gui) mergeBranchIntoCheckedOutBranch(branchName string) error {
 		return err
 	}
 
-	if gui.Git.IsHeadDetached() {
+	if gui.Git.Status().IsHeadDetached() {
 		return gui.CreateErrorPanel("Cannot merge branch in detached head state. You might have checked out a commit directly or a remote branch, in which case you should checkout the local branch you want to be on")
 	}
 	checkedOutBranchName := gui.CurrentBranch().Name

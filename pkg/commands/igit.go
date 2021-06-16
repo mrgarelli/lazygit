@@ -16,6 +16,7 @@ type IGit interface {
 	Commits() ICommitsMgr
 	Worktree() IWorktreeMgr
 	Submodules() ISubmodulesMgr
+	Status() IStatusMgr
 
 	// config
 	IGitConfigMgr
@@ -94,14 +95,6 @@ type IGit interface {
 	StashSave(message string) error
 	ShowStashEntryCmdObj(index int) ICmdObj
 	StashSaveStagedChanges(message string) error
-
-	// state/info
-	RebaseMode() RebasingMode
-	IsMerging() bool
-	IsRebasing() bool
-	InNormalWorkingTreeState() bool
-	IsBareRepo() bool
-	IsHeadDetached() bool
 
 	// sync
 	Push(opts PushOpts) (bool, error)

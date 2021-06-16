@@ -36,6 +36,7 @@ type Git struct {
 	branchesMgr          *BranchesMgr
 	worktreeMgr          *WorktreeMgr
 	submodulesMgr        *SubmodulesMgr
+	statusMgr            *StatusMgr
 	log                  *logrus.Entry
 	os                   oscommands.IOS
 	repo                 *gogit.Repository
@@ -70,10 +71,11 @@ func NewGit(log *logrus.Entry, oS *oscommands.OS, tr *i18n.TranslationSet, confi
 
 	commander := NewCommander(oS.RunWithOutput, log, oS.GetLazygitPath(), oS.Quote)
 	gitConfig := NewGitConfigMgr(commander, config.GetUserConfig(), config.GetUserConfigDir(), getGitConfigValue, log)
-	commitsMgr := NewCommitsMgr(commander, gitConfig)
 	branchesMgr := NewBranchesMgr(commander, gitConfig)
 	submodulesMgr := NewSubmodulesMgr(commander, gitConfig, log, dotGitDir)
 	worktreeMgr := NewWorktreeMgr(commander, gitConfig, branchesMgr, submodulesMgr, log, oS)
+	statusMgr := NewStatusMgr(commander, oS, repo, dotGitDir, log)
+	commitsMgr := NewCommitsMgr(commander, gitConfig, branchesMgr, statusMgr, log, oS, tr, dotGitDir)
 
 	gitCommand := &Git{
 		Commander:     commander,
@@ -82,6 +84,7 @@ func NewGit(log *logrus.Entry, oS *oscommands.OS, tr *i18n.TranslationSet, confi
 		branchesMgr:   branchesMgr,
 		worktreeMgr:   worktreeMgr,
 		submodulesMgr: submodulesMgr,
+		statusMgr:     statusMgr,
 		log:           log,
 		os:            oS,
 		tr:            tr,
@@ -107,6 +110,10 @@ func (c *Git) Worktree() IWorktreeMgr {
 
 func (c *Git) Submodules() ISubmodulesMgr {
 	return c.submodulesMgr
+}
+
+func (c *Git) Status() IStatusMgr {
+	return c.statusMgr
 }
 
 func (c *Git) Quote(str string) string {
@@ -261,18 +268,13 @@ func (c *Git) GenericContinueCmdObj() ICmdObj {
 }
 
 func (c *Git) GenericMergeOrRebaseCmdObj(action string) ICmdObj {
-	if c.IsRebasing() {
+	if c.Status().IsRebasing() {
 		return BuildGitCmdObjFromStr(fmt.Sprintf("rebase --%s", action))
 
 	}
-	if c.IsMerging() {
+	if c.Status().IsMerging() {
 		return BuildGitCmdObjFromStr(fmt.Sprintf("merge --%s", action))
 	}
 
 	panic("expected rebase mode")
-}
-
-func (c *Git) IsHeadDetached() bool {
-	err := c.RunGitCmdFromStr("symbolic-ref -q HEAD")
-	return err != nil
 }

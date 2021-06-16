@@ -146,7 +146,7 @@ func (c *Git) MovePatchIntoIndex(commits []*models.Commit, commitIdx int, p *pat
 	}
 
 	if err := p.ApplyPatches(c.Worktree().ApplyPatch, true); err != nil {
-		if c.IsRebasing() {
+		if c.Status().IsRebasing() {
 			if err := c.AbortRebase(); err != nil {
 				return err
 			}
@@ -166,7 +166,7 @@ func (c *Git) MovePatchIntoIndex(commits []*models.Commit, commitIdx int, p *pat
 	c.onSuccessfulContinue = func() error {
 		// add patches to index
 		if err := p.ApplyPatches(c.Worktree().ApplyPatch, false); err != nil {
-			if c.IsRebasing() {
+			if c.Status().IsRebasing() {
 				if err := c.AbortRebase(); err != nil {
 					return err
 				}

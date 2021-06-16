@@ -170,7 +170,7 @@ func (gui *Gui) branchCommitsListContext() *ListContext {
 				gui.State.ScreenMode != SCREEN_NORMAL,
 				gui.cherryPickedCommitShaMap(),
 				gui.State.Modes.Diffing.Ref,
-				gui.Git.IsRebasing(),
+				gui.Git.Status().IsRebasing(),
 				gui.Tr,
 			)
 		},
