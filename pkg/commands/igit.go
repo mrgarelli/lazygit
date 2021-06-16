@@ -85,7 +85,7 @@ type IGit interface {
 	RemoveRemote(name string) error
 	RenameRemote(oldRemoteName string, newRemoteName string) error
 	UpdateRemoteUrl(remoteName string, updatedUrl string) error
-	DeleteRemoteBranch(remoteName string, branchName string) error
+	DeleteRemoteRef(remoteName string, branchName string) error
 	CheckRemoteBranchExists(branch *models.Branch) bool
 	GetRemoteURL() string
 
@@ -111,6 +111,6 @@ type IGit interface {
 
 	// tags
 	DeleteTag(tagName string) error
-	PushTag(remoteName string, tagName string) error
+	PushRef(remoteName string, refName string) error
 	CreateLightweightTag(tagName string, commitSha string) error
 }

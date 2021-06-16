@@ -22,12 +22,6 @@ func (c *Git) UpdateRemoteUrl(remoteName string, updatedUrl string) error {
 	return c.RunGitCmdFromStr(fmt.Sprintf("remote set-url %s %s", remoteName, updatedUrl))
 }
 
-func (c *Git) DeleteRemoteBranch(remoteName string, branchName string) error {
-	return c.RunCommandWithCredentialsHandling(
-		BuildGitCmdObjFromStr(fmt.Sprintf("push %s --delete %s", remoteName, branchName)),
-	)
-}
-
 // CheckRemoteBranchExists Returns remote branch
 func (c *Git) CheckRemoteBranchExists(branch *models.Branch) bool {
 	_, err := c.RunWithOutput(
