@@ -3,7 +3,6 @@ package gui
 import (
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
-	"github.com/jesseduffield/lazygit/pkg/commands"
 	"github.com/jesseduffield/lazygit/pkg/gui/presentation"
 	. "github.com/jesseduffield/lazygit/pkg/gui/types"
 	"github.com/jesseduffield/lazygit/pkg/utils"
@@ -171,7 +170,8 @@ func (gui *Gui) branchCommitsListContext() *ListContext {
 				gui.State.ScreenMode != SCREEN_NORMAL,
 				gui.cherryPickedCommitShaMap(),
 				gui.State.Modes.Diffing.Ref,
-				gui.GetGit().RebaseMode() == commands.REBASE_MODE_INTERACTIVE,
+				gui.Git.IsRebasing(),
+				gui.Tr,
 			)
 		},
 		SelectedItem: func() (ListItem, bool) {
@@ -228,7 +228,9 @@ func (gui *Gui) subCommitsListContext() *ListContext {
 				gui.State.ScreenMode != SCREEN_NORMAL,
 				gui.cherryPickedCommitShaMap(),
 				gui.State.Modes.Diffing.Ref,
+				// no need to mention if we're rebasing because that only applies to main commits panel
 				false,
+				gui.Tr,
 			)
 		},
 		SelectedItem: func() (ListItem, bool) {
