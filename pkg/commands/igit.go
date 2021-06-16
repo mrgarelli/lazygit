@@ -32,10 +32,6 @@ type IGit interface {
 	EditFileCmdObj(filename string) (ICmdObj, error)
 
 	// worktree
-	StageFile(fileName string) error
-	StageAll() error
-	UnstageAll() error
-	UnStageFile(fileNames []string, reset bool) error
 	BeforeAndAfterFileForRename(file *models.File) (*models.File, *models.File, error)
 	DiscardAllFileChanges(file *models.File) error
 	DiscardAllDirChanges(node *filetree.FileNode) error

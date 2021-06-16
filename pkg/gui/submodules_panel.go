@@ -111,7 +111,7 @@ func (gui *Gui) resetSubmodule(submodule *models.SubmoduleConfig) error {
 
 	file := gui.fileForSubmodule(submodule)
 	if file != nil {
-		if err := gitCommand.UnStageFile(file.Names(), file.Tracked); err != nil {
+		if err := gitCommand.Worktree().UnStageFile(file.Names(), file.Tracked); err != nil {
 			return gui.SurfaceError(err)
 		}
 	}

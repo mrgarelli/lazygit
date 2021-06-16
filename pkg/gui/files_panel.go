@@ -169,7 +169,7 @@ func (gui *Gui) stageSelectedFile() error {
 		return nil
 	}
 
-	return gui.Git.StageFile(file.Name)
+	return gui.Git.Worktree().StageFile(file.Name)
 }
 
 func (gui *Gui) handleEnterFile() error {
@@ -219,11 +219,11 @@ func (gui *Gui) handleFilePress() error {
 		}
 
 		if file.HasUnstagedChanges {
-			if err := gui.Git.WithSpan(gui.Tr.Spans.StageFile).StageFile(file.Name); err != nil {
+			if err := gui.Git.WithSpan(gui.Tr.Spans.StageFile).Worktree().StageFile(file.Name); err != nil {
 				return gui.SurfaceError(err)
 			}
 		} else {
-			if err := gui.Git.WithSpan(gui.Tr.Spans.UnstageFile).UnStageFile(file.Names(), file.Tracked); err != nil {
+			if err := gui.Git.WithSpan(gui.Tr.Spans.UnstageFile).Worktree().UnStageFile(file.Names(), file.Tracked); err != nil {
 				return gui.SurfaceError(err)
 			}
 		}
@@ -235,12 +235,12 @@ func (gui *Gui) handleFilePress() error {
 		}
 
 		if node.GetHasUnstagedChanges() {
-			if err := gui.Git.WithSpan(gui.Tr.Spans.StageFile).StageFile(node.Path); err != nil {
+			if err := gui.Git.WithSpan(gui.Tr.Spans.StageFile).Worktree().StageFile(node.Path); err != nil {
 				return gui.SurfaceError(err)
 			}
 		} else {
 			// pretty sure it doesn't matter that we're always passing true here
-			if err := gui.Git.WithSpan(gui.Tr.Spans.UnstageFile).UnStageFile([]string{node.Path}, true); err != nil {
+			if err := gui.Git.WithSpan(gui.Tr.Spans.UnstageFile).Worktree().UnStageFile([]string{node.Path}, true); err != nil {
 				return gui.SurfaceError(err)
 			}
 		}
@@ -269,9 +269,9 @@ func (gui *Gui) focusAndSelectFile() error {
 func (gui *Gui) handleStageAll() error {
 	var err error
 	if gui.allFilesStaged() {
-		err = gui.Git.WithSpan(gui.Tr.Spans.UnstageAllFiles).UnstageAll()
+		err = gui.Git.WithSpan(gui.Tr.Spans.UnstageAllFiles).Worktree().UnstageAll()
 	} else {
-		err = gui.Git.WithSpan(gui.Tr.Spans.StageAllFiles).StageAll()
+		err = gui.Git.WithSpan(gui.Tr.Spans.StageAllFiles).Worktree().StageAll()
 	}
 	if err != nil {
 		_ = gui.SurfaceError(err)
@@ -299,7 +299,7 @@ func (gui *Gui) handleIgnoreFile() error {
 	unstageFiles := func() error {
 		return node.ForEachFile(func(file *models.File) error {
 			if file.HasStagedChanges {
-				if err := gitCommand.UnStageFile(file.Names(), file.Tracked); err != nil {
+				if err := gitCommand.Worktree().UnStageFile(file.Names(), file.Tracked); err != nil {
 					return err
 				}
 			}
@@ -366,7 +366,7 @@ func (gui *Gui) commitPrefixConfigForRepo() *config.CommitPrefixConfig {
 func (gui *Gui) prepareFilesForCommit() error {
 	noStagedFiles := len(gui.stagedFiles()) == 0
 	if noStagedFiles && gui.Config.GetUserConfig().Gui.SkipNoStagedFilesWarning {
-		err := gui.Git.WithSpan(gui.Tr.Spans.StageAllFiles).StageAll()
+		err := gui.Git.WithSpan(gui.Tr.Spans.StageAllFiles).Worktree().StageAll()
 		if err != nil {
 			return err
 		}
@@ -421,7 +421,7 @@ func (gui *Gui) promptToStageAllAndRetry(retry func() error) error {
 		Title:  gui.Tr.NoFilesStagedTitle,
 		Prompt: gui.Tr.NoFilesStagedPrompt,
 		HandleConfirm: func() error {
-			if err := gui.Git.WithSpan(gui.Tr.Spans.StageAllFiles).StageAll(); err != nil {
+			if err := gui.Git.WithSpan(gui.Tr.Spans.StageAllFiles).Worktree().StageAll(); err != nil {
 				return gui.SurfaceError(err)
 			}
 			if err := gui.refreshFilesAndSubmodules(); err != nil {

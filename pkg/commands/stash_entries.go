@@ -59,7 +59,7 @@ func (c *Git) StashSaveStagedChanges(message string) error {
 	files := c.Worktree().GetStatusFiles(loaders.LoadStatusFilesOpts{})
 	for _, file := range files {
 		if file.ShortStatus == "AD" {
-			if err := c.UnStageFile(file.Names(), false); err != nil {
+			if err := c.Worktree().UnStageFile(file.Names(), false); err != nil {
 				return err
 			}
 		}

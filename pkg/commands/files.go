@@ -19,10 +19,10 @@ import (
 //counterfeiter:generate . IWorktreeMgr
 type IWorktreeMgr interface {
 	OpenMergeToolCmdObj() ICmdObj
-	// StageFile(fileName string) error
-	// StageAll() error
-	// UnstageAll() error
-	// UnStageFile(fileNames []string, reset bool) error
+	StageFile(fileName string) error
+	StageAll() error
+	UnstageAll() error
+	UnStageFile(fileNames []string, reset bool) error
 	// BeforeAndAfterFileForRename(file *models.File) (*models.File, *models.File, error)
 	// DiscardAllFileChanges(file *models.File) error
 	// DiscardAllDirChanges(node *filetree.FileNode) error
@@ -60,31 +60,31 @@ func (c *WorktreeMgr) OpenMergeToolCmdObj() ICmdObj {
 }
 
 // StageFile stages a file
-func (c *Git) StageFile(fileName string) error {
-	return c.RunGitCmdFromStr(fmt.Sprintf("add -- %s", c.GetOS().Quote(fileName)))
+func (c *WorktreeMgr) StageFile(fileName string) error {
+	return c.commander.RunGitCmdFromStr(fmt.Sprintf("add -- %s", c.commander.Quote(fileName)))
 }
 
 // StageAll stages all files
-func (c *Git) StageAll() error {
-	return c.RunGitCmdFromStr("add -A")
+func (c *WorktreeMgr) StageAll() error {
+	return c.commander.RunGitCmdFromStr("add -A")
 }
 
 // UnstageAll unstages all files
-func (c *Git) UnstageAll() error {
-	return c.RunGitCmdFromStr("reset")
+func (c *WorktreeMgr) UnstageAll() error {
+	return c.commander.RunGitCmdFromStr("reset")
 }
 
 // UnStageFile unstages a file
 // we accept an array of filenames for the cases where a file has been renamed i.e.
 // we accept the current name and the previous name
-func (c *Git) UnStageFile(fileNames []string, reset bool) error {
+func (c *WorktreeMgr) UnStageFile(fileNames []string, reset bool) error {
 	cmdFormat := "rm --cached --force -- %s"
 	if reset {
 		cmdFormat = "reset HEAD -- %s"
 	}
 
 	for _, name := range fileNames {
-		if err := c.RunGitCmdFromStr(fmt.Sprintf(cmdFormat, c.GetOS().Quote(name))); err != nil {
+		if err := c.commander.RunGitCmdFromStr(fmt.Sprintf(cmdFormat, c.commander.Quote(name))); err != nil {
 			return err
 		}
 	}
