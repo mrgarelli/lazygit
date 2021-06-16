@@ -56,7 +56,7 @@ func (c *Git) StashSaveStagedChanges(message string) error {
 	// if you had staged an untracked file, that will now appear as 'AD' in git status
 	// meaning it's deleted in your working tree but added in your index. Given that it's
 	// now safely stashed, we need to remove it.
-	files := c.GetStatusFiles(loaders.LoadStatusFilesOpts{})
+	files := c.Worktree().GetStatusFiles(loaders.LoadStatusFilesOpts{})
 	for _, file := range files {
 		if file.ShortStatus == "AD" {
 			if err := c.UnStageFile(file.Names(), false); err != nil {

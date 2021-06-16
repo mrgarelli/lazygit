@@ -3,7 +3,6 @@
 package commands
 
 import (
-	"github.com/jesseduffield/lazygit/pkg/commands/loaders"
 	"github.com/jesseduffield/lazygit/pkg/commands/models"
 	"github.com/jesseduffield/lazygit/pkg/commands/oscommands"
 	"github.com/jesseduffield/lazygit/pkg/commands/patch"
@@ -49,7 +48,6 @@ type IGit interface {
 	RemoveTrackedFiles(name string) error
 	RemoveUntrackedFiles() error
 	ResetAndClean() error
-	GetStatusFiles(opts loaders.LoadStatusFilesOpts) []*models.File
 
 	// commands
 	ICommander

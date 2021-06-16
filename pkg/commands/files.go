@@ -13,6 +13,7 @@ import (
 	. "github.com/jesseduffield/lazygit/pkg/commands/types"
 	"github.com/jesseduffield/lazygit/pkg/gui/filetree"
 	"github.com/jesseduffield/lazygit/pkg/utils"
+	"github.com/sirupsen/logrus"
 )
 
 //counterfeiter:generate . IWorktreeMgr
@@ -35,19 +36,22 @@ type IWorktreeMgr interface {
 	// RemoveTrackedFiles(name string) error
 	// RemoveUntrackedFiles() error
 	// ResetAndClean() error
-	// GetStatusFiles(opts loaders.LoadStatusFilesOpts) []*models.File
+	GetStatusFiles(opts loaders.LoadStatusFilesOpts) []*models.File
 }
 
 type WorktreeMgr struct {
 	commander ICommander
 	config    IGitConfig
+	log       *logrus.Entry
 	os        oscommands.IOS
 }
 
-func NewWorktreeMgr(commander ICommander, config IGitConfig, oS *oscommands.OS) *WorktreeMgr {
+func NewWorktreeMgr(commander ICommander, config IGitConfig, log *logrus.Entry, oS *oscommands.OS) *WorktreeMgr {
 	return &WorktreeMgr{
 		commander: commander,
 		config:    config,
+		os:        oS,
+		log:       log,
 	}
 }
 
@@ -96,7 +100,7 @@ func (c *Git) BeforeAndAfterFileForRename(file *models.File) (*models.File, *mod
 	// all files, passing the --no-renames flag and then recursively call the function
 	// again for the before file and after file.
 
-	filesWithoutRenames := c.GetStatusFiles(loaders.LoadStatusFilesOpts{NoRenames: true})
+	filesWithoutRenames := c.Worktree().GetStatusFiles(loaders.LoadStatusFilesOpts{NoRenames: true})
 	var beforeFile *models.File
 	var afterFile *models.File
 	for _, f := range filesWithoutRenames {
@@ -300,4 +304,8 @@ func (c *Git) EditFileCmdObj(filename string) (ICmdObj, error) {
 	cmdObj := c.BuildShellCmdObj(fmt.Sprintf("%s %s", editor, c.GetOS().Quote(filename)))
 
 	return cmdObj, nil
+}
+
+func (c *WorktreeMgr) GetStatusFiles(opts loaders.LoadStatusFilesOpts) []*models.File {
+	return loaders.NewStatusFileLoader(c.commander, c.config, c.log, c.os).Load(opts)
 }

@@ -10,8 +10,6 @@ import (
 	"github.com/go-errors/errors"
 
 	gogit "github.com/jesseduffield/go-git/v5"
-	"github.com/jesseduffield/lazygit/pkg/commands/loaders"
-	"github.com/jesseduffield/lazygit/pkg/commands/models"
 	"github.com/jesseduffield/lazygit/pkg/commands/oscommands"
 	"github.com/jesseduffield/lazygit/pkg/commands/patch"
 	. "github.com/jesseduffield/lazygit/pkg/commands/types"
@@ -73,7 +71,7 @@ func NewGit(log *logrus.Entry, oS *oscommands.OS, tr *i18n.TranslationSet, confi
 	gitConfig := NewGitConfigMgr(commander, config.GetUserConfig(), getGitConfigValue, log)
 	commitsMgr := NewCommitsMgr(commander, gitConfig)
 	branchesMgr := NewBranchesMgr(commander, gitConfig)
-	worktreeMgr := NewWorktreeMgr(commander, gitConfig, oS)
+	worktreeMgr := NewWorktreeMgr(commander, gitConfig, log, oS)
 
 	gitCommand := &Git{
 		Commander:    commander,
@@ -265,10 +263,6 @@ func (c *Git) GenericMergeOrRebaseCmdObj(action string) ICmdObj {
 	default:
 		panic("expected rebase mode")
 	}
-}
-
-func (c *Git) GetStatusFiles(opts loaders.LoadStatusFilesOpts) []*models.File {
-	return loaders.NewStatusFileLoader(c).Load(opts)
 }
 
 func (c *Git) IsHeadDetached() bool {

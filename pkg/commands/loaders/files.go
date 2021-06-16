@@ -7,6 +7,7 @@ import (
 	"github.com/jesseduffield/lazygit/pkg/commands/models"
 	"github.com/jesseduffield/lazygit/pkg/commands/oscommands"
 	. "github.com/jesseduffield/lazygit/pkg/commands/types"
+	"github.com/jesseduffield/lazygit/pkg/config"
 	"github.com/jesseduffield/lazygit/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -20,26 +21,58 @@ type LoadStatusFilesOpts struct {
 
 type StatusFileLoaderProps interface {
 	GetConfigValue(string) string
+
 	GetLog() *logrus.Entry
+
 	GetOS() oscommands.IOS
+
 	RunWithOutput(ICmdObj) (string, error)
 	BuildGitCmdObjFromStr(string) ICmdObj
 }
 
-type StatusFileLoader struct {
-	StatusFileLoaderProps
+// duplicating for now
+type ICommander interface {
+	Run(cmdObj ICmdObj) error
+	RunWithOutput(cmdObj ICmdObj) (string, error)
+	RunGitCmdFromStr(cmdStr string) error
+	BuildGitCmdObjFromStr(cmdStr string) ICmdObj
+	BuildShellCmdObj(command string) ICmdObj
+	SkipEditor(cmdObj ICmdObj)
+	Quote(string) string
 }
 
-func NewStatusFileLoader(p StatusFileLoaderProps) *StatusFileLoader {
-	return &StatusFileLoader{p}
+// duplicating for now
+type IGitConfig interface {
+	GetPager(width int) string
+	ColorArg() string
+	GetConfigValue(key string) string
+	UsingGpg() bool
+	GetUserConfig() *config.UserConfig
+	GetPushToCurrent() bool
+}
+
+type StatusFileLoader struct {
+	commander ICommander
+	config    IGitConfig
+	log       *logrus.Entry
+	os        oscommands.IOS
+}
+
+func NewStatusFileLoader(commander ICommander, config IGitConfig, log *logrus.Entry, os oscommands.IOS) *StatusFileLoader {
+	return &StatusFileLoader{
+		commander: commander,
+		config:    config,
+		log:       log,
+		os:        os,
+	}
 }
 
 func (c *StatusFileLoader) Load(opts LoadStatusFilesOpts) []*models.File {
 	cmdObj := c.buildCmdObj(opts)
 
-	status, err := c.RunWithOutput(cmdObj)
+	status, err := c.commander.RunWithOutput(cmdObj)
 	if err != nil {
-		c.GetLog().Error(err)
+		c.log.Error(err)
 		return []*models.File{}
 	}
 
@@ -60,7 +93,7 @@ func (c *StatusFileLoader) Load(opts LoadStatusFilesOpts) []*models.File {
 
 func (c *StatusFileLoader) fileFromStatusString(statusString string) *models.File {
 	if strings.HasPrefix(statusString, "warning") {
-		c.GetLog().Warningf("warning when calling git status: %s", statusString)
+		c.log.Warningf("warning when calling git status: %s", statusString)
 		return nil
 	}
 	change := statusString[0:2]
@@ -89,14 +122,14 @@ func (c *StatusFileLoader) fileFromStatusString(statusString string) *models.Fil
 		Added:                   unstagedChange == "A" || untracked,
 		HasMergeConflicts:       hasMergeConflicts,
 		HasInlineMergeConflicts: hasInlineMergeConflicts,
-		Type:                    c.GetOS().FileType(name),
+		Type:                    c.os.FileType(name),
 		ShortStatus:             change,
 	}
 }
 
 func (c *StatusFileLoader) buildCmdObj(opts LoadStatusFilesOpts) ICmdObj {
 	// check if config wants us ignoring untracked files
-	untrackedFilesSetting := c.GetConfigValue("status.showUntrackedFiles")
+	untrackedFilesSetting := c.config.GetConfigValue("status.showUntrackedFiles")
 
 	if untrackedFilesSetting == "" {
 		untrackedFilesSetting = "all"
@@ -108,7 +141,7 @@ func (c *StatusFileLoader) buildCmdObj(opts LoadStatusFilesOpts) ICmdObj {
 		noRenamesFlag = "--no-renames"
 	}
 
-	return c.BuildGitCmdObjFromStr(fmt.Sprintf("status %s --porcelain -z %s", untrackedFilesArg, noRenamesFlag))
+	return c.commander.BuildGitCmdObjFromStr(fmt.Sprintf("status %s --porcelain -z %s", untrackedFilesArg, noRenamesFlag))
 }
 
 func (*StatusFileLoader) cleanGitStatus(statusLines string) []string {
