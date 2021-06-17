@@ -19,6 +19,7 @@ type IGit interface {
 	Status() IStatusMgr
 	Stash() IStashMgr
 	Tags() ITagsMgr
+	Remotes() IRemotesMgr
 
 	// config
 	IGitConfigMgr
@@ -50,7 +51,6 @@ type IGit interface {
 	// loaders
 	GetFilesInDiff(from string, to string, reverse bool) ([]*models.CommitFile, error)
 	GetReflogCommits(lastReflogCommit *models.Commit, filterPath string) ([]*models.Commit, bool, error)
-	GetRemotes() ([]*models.Remote, error)
 
 	// patch
 	NewPatchManager() *patch.PatchManager
@@ -81,15 +81,6 @@ type IGit interface {
 	GenericMergeOrRebaseAction(commandType string, command string) error
 	CherryPickCommits(commits []*models.Commit) error
 
-	// remotes
-	AddRemote(name string, url string) error
-	RemoveRemote(name string) error
-	RenameRemote(oldRemoteName string, newRemoteName string) error
-	UpdateRemoteUrl(remoteName string, updatedUrl string) error
-	DeleteRemoteRef(remoteName string, ref string) error
-	CheckRemoteBranchExists(branch *models.Branch) bool
-	GetRemoteURL() string
-
 	// sync
 	Push(opts PushOpts) (bool, error)
 	Fetch(opts FetchOptions) error
@@ -97,4 +88,5 @@ type IGit interface {
 	FastForward(branchName string, remoteName string, remoteBranchName string) error
 	FetchRemote(remoteName string) error
 	PushRef(remoteName string, refName string) error
+	DeleteRemoteRef(remoteName string, ref string) error
 }

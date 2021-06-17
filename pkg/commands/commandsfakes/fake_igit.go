@@ -2310,7 +2310,7 @@ func (fake *FakeIGit) ContinueRebaseReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeIGit) CreateLightweightTag(arg1 string, arg2 string) error {
+func (fake *FakeIGit) LightweightCreate(arg1 string, arg2 string) error {
 	fake.createLightweightTagMutex.Lock()
 	ret, specificReturn := fake.createLightweightTagReturnsOnCall[len(fake.createLightweightTagArgsForCall)]
 	fake.createLightweightTagArgsForCall = append(fake.createLightweightTagArgsForCall, struct {
@@ -2319,7 +2319,7 @@ func (fake *FakeIGit) CreateLightweightTag(arg1 string, arg2 string) error {
 	}{arg1, arg2})
 	stub := fake.CreateLightweightTagStub
 	fakeReturns := fake.createLightweightTagReturns
-	fake.recordInvocation("CreateLightweightTag", []interface{}{arg1, arg2})
+	fake.recordInvocation("LightweightCreate", []interface{}{arg1, arg2})
 	fake.createLightweightTagMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)
@@ -2502,7 +2502,7 @@ func (fake *FakeIGit) DeleteRemoteBranchReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeIGit) DeleteTag(arg1 string) error {
+func (fake *FakeIGit) Delete(arg1 string) error {
 	fake.deleteTagMutex.Lock()
 	ret, specificReturn := fake.deleteTagReturnsOnCall[len(fake.deleteTagArgsForCall)]
 	fake.deleteTagArgsForCall = append(fake.deleteTagArgsForCall, struct {
@@ -2510,7 +2510,7 @@ func (fake *FakeIGit) DeleteTag(arg1 string) error {
 	}{arg1})
 	stub := fake.DeleteTagStub
 	fakeReturns := fake.deleteTagReturns
-	fake.recordInvocation("DeleteTag", []interface{}{arg1})
+	fake.recordInvocation("Delete", []interface{}{arg1})
 	fake.deleteTagMutex.Unlock()
 	if stub != nil {
 		return stub(arg1)
@@ -4574,7 +4574,7 @@ func (fake *FakeIGit) GetStatusFiles(arg1 loaders.LoadStatusFilesOpts) []*models
 	}{arg1})
 	stub := fake.GetStatusFilesStub
 	fakeReturns := fake.getStatusFilesReturns
-	fake.recordInvocation("GetStatusFiles", []interface{}{arg1})
+	fake.recordInvocation("LoadStatusFiles", []interface{}{arg1})
 	fake.getStatusFilesMutex.Unlock()
 	if stub != nil {
 		return stub(arg1)
@@ -4683,14 +4683,14 @@ func (fake *FakeIGit) GetSubmoduleConfigsReturnsOnCall(i int, result1 []*models.
 	}{result1, result2}
 }
 
-func (fake *FakeIGit) GetTags() ([]*models.Tag, error) {
+func (fake *FakeIGit) Load() ([]*models.Tag, error) {
 	fake.getTagsMutex.Lock()
 	ret, specificReturn := fake.getTagsReturnsOnCall[len(fake.getTagsArgsForCall)]
 	fake.getTagsArgsForCall = append(fake.getTagsArgsForCall, struct {
 	}{})
 	stub := fake.GetTagsStub
 	fakeReturns := fake.getTagsReturns
-	fake.recordInvocation("GetTags", []interface{}{})
+	fake.recordInvocation("Load", []interface{}{})
 	fake.getTagsMutex.Unlock()
 	if stub != nil {
 		return stub()

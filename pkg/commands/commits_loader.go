@@ -27,8 +27,7 @@ import (
 
 const SEPARATION_CHAR = "|"
 
-// CommitListBuilder returns a list of Branch objects for the current repo
-type CommitListBuilder struct {
+type CommitsLoader struct {
 	Log         *logrus.Entry
 	branchesMgr IBranchesMgr
 	statusMgr   IStatusMgr
@@ -38,11 +37,11 @@ type CommitListBuilder struct {
 	dotGitDir   string
 }
 
-// NewCommitListBuilder builds a new commit list builder
-func NewCommitListBuilder(
+// NewCommitsLoader builds a new commit list builder
+func NewCommitsLoader(
 	log *logrus.Entry, branchesMgr IBranchesMgr, statusMgr IStatusMgr, osCommand *oscommands.OS, tr *i18n.TranslationSet, dotGitDir string, commander ICommander,
-) *CommitListBuilder {
-	return &CommitListBuilder{
+) *CommitsLoader {
+	return &CommitsLoader{
 		Log:         log,
 		branchesMgr: branchesMgr,
 		statusMgr:   statusMgr,
@@ -57,7 +56,7 @@ func NewCommitListBuilder(
 // then puts them into a commit object
 // example input:
 // 8ad01fe32fcc20f07bc6693f87aa4977c327f1e1|10 hours ago|Jesse Duffield| (HEAD -> master, tag: v0.15.2)|refresh commits when adding a tag
-func (c *CommitListBuilder) extractCommitFromLine(line string) *models.Commit {
+func (c *CommitsLoader) extractCommitFromLine(line string) *models.Commit {
 	split := strings.Split(line, SEPARATION_CHAR)
 
 	sha := split[0]
@@ -90,14 +89,14 @@ func (c *CommitListBuilder) extractCommitFromLine(line string) *models.Commit {
 	}
 }
 
-type GetCommitsOptions struct {
+type LoadCommitsOptions struct {
 	Limit                bool
 	FilterPath           string
 	IncludeRebaseCommits bool
 	RefName              string // e.g. "HEAD" or "my_branch"
 }
 
-func (c *CommitListBuilder) MergeRebasingCommits(commits []*models.Commit) ([]*models.Commit, error) {
+func (c *CommitsLoader) MergeRebasingCommits(commits []*models.Commit) ([]*models.Commit, error) {
 	// chances are we have as many commits as last time so we'll set the capacity to be the old length
 	result := make([]*models.Commit, 0, len(commits))
 	for i, commit := range commits {
@@ -124,8 +123,8 @@ func (c *CommitListBuilder) MergeRebasingCommits(commits []*models.Commit) ([]*m
 	return result, nil
 }
 
-// GetCommits obtains the commits of the current branch
-func (c *CommitListBuilder) GetCommits(opts GetCommitsOptions) ([]*models.Commit, error) {
+// Load obtains the commits of the current branch
+func (c *CommitsLoader) Load(opts LoadCommitsOptions) ([]*models.Commit, error) {
 	commits := []*models.Commit{}
 	var rebasingCommits []*models.Commit
 
@@ -171,7 +170,7 @@ func (c *CommitListBuilder) GetCommits(opts GetCommitsOptions) ([]*models.Commit
 }
 
 // getRebasingCommits obtains the commits that we're in the process of rebasing
-func (c *CommitListBuilder) getRebasingCommits(rebaseMode RebasingMode) ([]*models.Commit, error) {
+func (c *CommitsLoader) getRebasingCommits(rebaseMode RebasingMode) ([]*models.Commit, error) {
 	switch rebaseMode {
 	case REBASE_MODE_NON_INTERACTIVE:
 		return c.getNormalRebasingCommits()
@@ -182,7 +181,7 @@ func (c *CommitListBuilder) getRebasingCommits(rebaseMode RebasingMode) ([]*mode
 	}
 }
 
-func (c *CommitListBuilder) getNormalRebasingCommits() ([]*models.Commit, error) {
+func (c *CommitsLoader) getNormalRebasingCommits() ([]*models.Commit, error) {
 	rewrittenCount := 0
 	bytesContent, err := ioutil.ReadFile(filepath.Join(c.dotGitDir, "rebase-apply/rewritten"))
 	if err == nil {
@@ -235,7 +234,7 @@ func (c *CommitListBuilder) getNormalRebasingCommits() ([]*models.Commit, error)
 // getInteractiveRebasingCommits takes our git-rebase-todo and our git-rebase-todo.backup files
 // and extracts out the sha and names of commits that we still have to go
 // in the rebase:
-func (c *CommitListBuilder) getInteractiveRebasingCommits() ([]*models.Commit, error) {
+func (c *CommitsLoader) getInteractiveRebasingCommits() ([]*models.Commit, error) {
 	bytesContent, err := ioutil.ReadFile(filepath.Join(c.dotGitDir, "rebase-merge/git-rebase-todo"))
 	if err != nil {
 		c.Log.Error(fmt.Sprintf("error occurred reading git-rebase-todo: %s", err.Error()))
@@ -269,7 +268,7 @@ func (c *CommitListBuilder) getInteractiveRebasingCommits() ([]*models.Commit, e
 // From: Lazygit Tester <test@example.com>
 // Date: Wed, 5 Dec 2018 21:03:23 +1100
 // Subject: second commit on master
-func (c *CommitListBuilder) commitFromPatch(content string) (*models.Commit, error) {
+func (c *CommitsLoader) commitFromPatch(content string) (*models.Commit, error) {
 	lines := strings.Split(content, "\n")
 	sha := strings.Split(lines[0], " ")[1]
 	name := strings.TrimPrefix(lines[3], "Subject: ")
@@ -280,7 +279,7 @@ func (c *CommitListBuilder) commitFromPatch(content string) (*models.Commit, err
 	}, nil
 }
 
-func (c *CommitListBuilder) setCommitMergedStatuses(refName string, commits []*models.Commit) ([]*models.Commit, error) {
+func (c *CommitsLoader) setCommitMergedStatuses(refName string, commits []*models.Commit) ([]*models.Commit, error) {
 	ancestor, err := c.getMergeBase(refName)
 	if err != nil {
 		return nil, err
@@ -303,7 +302,7 @@ func (c *CommitListBuilder) setCommitMergedStatuses(refName string, commits []*m
 	return commits, nil
 }
 
-func (c *CommitListBuilder) getMergeBase(refName string) (string, error) {
+func (c *CommitsLoader) getMergeBase(refName string) (string, error) {
 	currentBranch, _, err := c.branchesMgr.CurrentBranchName()
 	if err != nil {
 		return "", err
@@ -331,7 +330,7 @@ func ignoringWarnings(commandOutput string) string {
 
 // getFirstPushedCommit returns the first commit SHA which has been pushed to the ref's upstream.
 // all commits above this are deemed unpushed and marked as such.
-func (c *CommitListBuilder) getFirstPushedCommit(refName string) (string, error) {
+func (c *CommitsLoader) getFirstPushedCommit(refName string) (string, error) {
 	output, err := c.commander.RunWithOutput(BuildGitCmdObjFromStr(fmt.Sprintf("merge-base %s %s@{u}", refName, refName)))
 	if err != nil {
 		return "", err
@@ -341,7 +340,7 @@ func (c *CommitListBuilder) getFirstPushedCommit(refName string) (string, error)
 }
 
 // getLog gets the git log.
-func (c *CommitListBuilder) getLogCmdObj(opts GetCommitsOptions) ICmdObj {
+func (c *CommitsLoader) getLogCmdObj(opts LoadCommitsOptions) ICmdObj {
 	limitFlag := ""
 	if opts.Limit {
 		limitFlag = "-300"

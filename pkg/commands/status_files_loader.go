@@ -13,12 +13,12 @@ import (
 
 const RENAME_SEPARATOR = " -> "
 
-// GetStatusFiles git status files
+// LoadStatusFiles git status files
 type LoadStatusFilesOpts struct {
 	NoRenames bool
 }
 
-type StatusFileListBuilder struct {
+type StatusFilesLoader struct {
 	ICommander
 
 	config IGitConfigMgr
@@ -26,8 +26,8 @@ type StatusFileListBuilder struct {
 	os     oscommands.IOS
 }
 
-func NewStatusFileListBuilder(commander ICommander, config IGitConfigMgr, log *logrus.Entry, os oscommands.IOS) *StatusFileListBuilder {
-	return &StatusFileListBuilder{
+func NewStatusFilesLoader(commander ICommander, config IGitConfigMgr, log *logrus.Entry, os oscommands.IOS) *StatusFilesLoader {
+	return &StatusFilesLoader{
 		ICommander: commander,
 		config:     config,
 		log:        log,
@@ -35,7 +35,7 @@ func NewStatusFileListBuilder(commander ICommander, config IGitConfigMgr, log *l
 	}
 }
 
-func (c *StatusFileListBuilder) GetStatusFiles(opts LoadStatusFilesOpts) []*models.File {
+func (c *StatusFilesLoader) Load(opts LoadStatusFilesOpts) []*models.File {
 	cmdObj := c.buildCmdObj(opts)
 
 	status, err := c.RunWithOutput(cmdObj)
@@ -59,7 +59,7 @@ func (c *StatusFileListBuilder) GetStatusFiles(opts LoadStatusFilesOpts) []*mode
 	return files
 }
 
-func (c *StatusFileListBuilder) fileFromStatusString(statusString string) *models.File {
+func (c *StatusFilesLoader) fileFromStatusString(statusString string) *models.File {
 	if strings.HasPrefix(statusString, "warning") {
 		c.log.Warningf("warning when calling git status: %s", statusString)
 		return nil
@@ -95,7 +95,7 @@ func (c *StatusFileListBuilder) fileFromStatusString(statusString string) *model
 	}
 }
 
-func (c *StatusFileListBuilder) buildCmdObj(opts LoadStatusFilesOpts) ICmdObj {
+func (c *StatusFilesLoader) buildCmdObj(opts LoadStatusFilesOpts) ICmdObj {
 	// check if config wants us ignoring untracked files
 	untrackedFilesSetting := c.config.GetConfigValue("status.showUntrackedFiles")
 
@@ -112,7 +112,7 @@ func (c *StatusFileListBuilder) buildCmdObj(opts LoadStatusFilesOpts) ICmdObj {
 	return c.BuildGitCmdObjFromStr(fmt.Sprintf("status %s --porcelain -z %s", untrackedFilesArg, noRenamesFlag))
 }
 
-func (*StatusFileListBuilder) cleanGitStatus(statusLines string) []string {
+func (*StatusFilesLoader) cleanGitStatus(statusLines string) []string {
 	splitLines := strings.Split(statusLines, "\x00")
 	// if a line starts with 'R' then the next line is the original file.
 	for i := 0; i < len(splitLines)-1; i++ {

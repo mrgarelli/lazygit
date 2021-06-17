@@ -11,9 +11,9 @@ import (
 
 //counterfeiter:generate . ITagsMgr
 type ITagsMgr interface {
-	DeleteTag(tagName string) error
-	CreateLightweightTag(tagName string, commitSha string) error
-	GetTags() ([]*models.Tag, error)
+	Delete(tagName string) error
+	LightweightCreate(tagName string, commitSha string) error
+	Load() ([]*models.Tag, error)
 }
 
 type TagsMgr struct {
@@ -32,7 +32,7 @@ func NewTagsMgr(
 	}
 }
 
-func (c *TagsMgr) GetTags() ([]*models.Tag, error) {
+func (c *TagsMgr) Load() ([]*models.Tag, error) {
 	// get remote branches, sorted  by creation date (descending)
 	// see: https://git-scm.com/docs/git-tag#Documentation/git-tag.txt---sortltkeygt
 	remoteBranchesStr, err := c.RunWithOutput(
@@ -60,10 +60,10 @@ func (c *TagsMgr) GetTags() ([]*models.Tag, error) {
 	return tags, nil
 }
 
-func (c *TagsMgr) CreateLightweightTag(tagName string, commitSha string) error {
+func (c *TagsMgr) LightweightCreate(tagName string, commitSha string) error {
 	return c.RunGitCmdFromStr(fmt.Sprintf("tag %s %s", tagName, commitSha))
 }
 
-func (c *TagsMgr) DeleteTag(tagName string) error {
+func (c *TagsMgr) Delete(tagName string) error {
 	return c.RunGitCmdFromStr(fmt.Sprintf("tag -d %s", tagName))
 }

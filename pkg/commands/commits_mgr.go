@@ -24,15 +24,15 @@ type ICommitsMgr interface {
 	Revert(sha string) error
 	RevertMerge(sha string, parentNumber int) error
 	CreateFixupCommit(sha string) error
-	GetCommits(GetCommitsOptions) ([]*models.Commit, error)
+	Load(LoadCommitsOptions) ([]*models.Commit, error)
 	MergeRebasingCommits(commits []*models.Commit) ([]*models.Commit, error)
 }
 
 type CommitsMgr struct {
 	ICommander
 
-	commitListBuilder *CommitListBuilder
-	config            IGitConfigMgr
+	commitsLoader *CommitsLoader
+	config        IGitConfigMgr
 }
 
 func NewCommitsMgr(
@@ -45,23 +45,23 @@ func NewCommitsMgr(
 	tr *i18n.TranslationSet,
 	dotGitDir string,
 ) *CommitsMgr {
-	commitListBuilder := NewCommitListBuilder(
+	commitsLoader := NewCommitsLoader(
 		log, branchesMgr, statusMgr, oS, tr, dotGitDir, commander,
 	)
 
 	return &CommitsMgr{
-		commitListBuilder: commitListBuilder,
-		ICommander:        commander,
-		config:            config,
+		commitsLoader: commitsLoader,
+		ICommander:    commander,
+		config:        config,
 	}
 }
 
-func (c *CommitsMgr) GetCommits(opts GetCommitsOptions) ([]*models.Commit, error) {
-	return c.commitListBuilder.GetCommits(opts)
+func (c *CommitsMgr) Load(opts LoadCommitsOptions) ([]*models.Commit, error) {
+	return c.commitsLoader.Load(opts)
 }
 
 func (c *CommitsMgr) MergeRebasingCommits(commits []*models.Commit) ([]*models.Commit, error) {
-	return c.commitListBuilder.MergeRebasingCommits(commits)
+	return c.commitsLoader.MergeRebasingCommits(commits)
 }
 
 // RenameCommit renames the topmost commit with the given name

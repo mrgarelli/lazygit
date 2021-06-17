@@ -19,26 +19,26 @@ type IStashMgr interface {
 type StashMgr struct {
 	ICommander
 
-	config           IGitConfigMgr
-	stashEntryLoader *StashEntryLoader
-	os               oscommands.IOS
-	worktreeMgr      IWorktreeMgr
+	config             IGitConfigMgr
+	stashEntriesLoader *StashEntriesLoader
+	os                 oscommands.IOS
+	worktreeMgr        IWorktreeMgr
 }
 
 func NewStashMgr(commander ICommander, config IGitConfigMgr, oS oscommands.IOS, worktreeMgr IWorktreeMgr) *StashMgr {
-	stashEntryLoader := NewStashEntryLoader(commander)
+	stashEntriesLoader := NewStashEntriesLoader(commander)
 
 	return &StashMgr{
-		stashEntryLoader: stashEntryLoader,
-		ICommander:       commander,
-		config:           config,
-		os:               oS,
-		worktreeMgr:      worktreeMgr,
+		stashEntriesLoader: stashEntriesLoader,
+		ICommander:         commander,
+		config:             config,
+		os:                 oS,
+		worktreeMgr:        worktreeMgr,
 	}
 }
 
 func (c *StashMgr) GetEntries(filterPath string) []*models.StashEntry {
-	return c.stashEntryLoader.GetEntries(filterPath)
+	return c.stashEntriesLoader.Load(filterPath)
 }
 
 // StashDo modify stash
@@ -89,7 +89,7 @@ func (c *StashMgr) SaveStagedChanges(message string) error {
 	// if you had staged an untracked file, that will now appear as 'AD' in git status
 	// meaning it's deleted in your working tree but added in your index. Given that it's
 	// now safely stashed, we need to remove it.
-	files := c.worktreeMgr.GetStatusFiles(LoadStatusFilesOpts{})
+	files := c.worktreeMgr.LoadStatusFiles(LoadStatusFilesOpts{})
 	for _, file := range files {
 		if file.ShortStatus == "AD" {
 			if err := c.worktreeMgr.UnStageFile(file.Names(), false); err != nil {

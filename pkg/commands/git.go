@@ -33,6 +33,7 @@ type Git struct {
 	*Commander
 	*GitConfigMgr
 	tagsMgr              *TagsMgr
+	remotesMgr           *RemotesMgr
 	commitsMgr           *CommitsMgr
 	branchesMgr          *BranchesMgr
 	worktreeMgr          *WorktreeMgr
@@ -74,6 +75,7 @@ func NewGit(log *logrus.Entry, oS *oscommands.OS, tr *i18n.TranslationSet, confi
 	commander := NewCommander(oS.RunWithOutput, log, oS.GetLazygitPath(), oS.Quote)
 	gitConfig := NewGitConfigMgr(commander, config.GetUserConfig(), config.GetUserConfigDir(), getGitConfigValue, log)
 	tagsMgr := NewTagsMgr(commander, gitConfig)
+	remotesMgr := NewRemotesMgr(commander, gitConfig, repo)
 	branchesMgr := NewBranchesMgr(commander, gitConfig, log)
 	submodulesMgr := NewSubmodulesMgr(commander, gitConfig, log, dotGitDir)
 	worktreeMgr := NewWorktreeMgr(commander, gitConfig, branchesMgr, submodulesMgr, log, oS)
@@ -85,6 +87,7 @@ func NewGit(log *logrus.Entry, oS *oscommands.OS, tr *i18n.TranslationSet, confi
 		Commander:     commander,
 		GitConfigMgr:  gitConfig,
 		tagsMgr:       tagsMgr,
+		remotesMgr:    remotesMgr,
 		commitsMgr:    commitsMgr,
 		branchesMgr:   branchesMgr,
 		worktreeMgr:   worktreeMgr,
@@ -128,6 +131,10 @@ func (c *Git) Stash() IStashMgr {
 
 func (c *Git) Tags() ITagsMgr {
 	return c.tagsMgr
+}
+
+func (c *Git) Remotes() IRemotesMgr {
+	return c.remotesMgr
 }
 
 func (c *Git) Quote(str string) string {

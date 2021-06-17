@@ -10,29 +10,17 @@ import (
 	"github.com/jesseduffield/lazygit/pkg/utils"
 )
 
-type StashEntryLoader struct {
+type StashEntriesLoader struct {
 	ICommander
 }
 
-func NewStashEntryLoader(commander ICommander) *StashEntryLoader {
-	return &StashEntryLoader{
+func NewStashEntriesLoader(commander ICommander) *StashEntriesLoader {
+	return &StashEntriesLoader{
 		ICommander: commander,
 	}
 }
 
-func (c *StashEntryLoader) getUnfilteredStashEntries() []*models.StashEntry {
-	rawString, _ := c.RunWithOutput(
-		BuildGitCmdObjFromStr("stash list --pretty='%gs'"),
-	)
-	stashEntries := []*models.StashEntry{}
-	for i, line := range utils.SplitLines(rawString) {
-		stashEntries = append(stashEntries, stashEntryFromLine(line, i))
-	}
-	return stashEntries
-}
-
-// GetStashEntries stash entries
-func (c *StashEntryLoader) GetEntries(filterPath string) []*models.StashEntry {
+func (c *StashEntriesLoader) Load(filterPath string) []*models.StashEntry {
 	if filterPath == "" {
 		return c.getUnfilteredStashEntries()
 	}
@@ -67,6 +55,17 @@ outer:
 				continue outer
 			}
 		}
+	}
+	return stashEntries
+}
+
+func (c *StashEntriesLoader) getUnfilteredStashEntries() []*models.StashEntry {
+	rawString, _ := c.RunWithOutput(
+		BuildGitCmdObjFromStr("stash list --pretty='%gs'"),
+	)
+	stashEntries := []*models.StashEntry{}
+	for i, line := range utils.SplitLines(rawString) {
+		stashEntries = append(stashEntries, stashEntryFromLine(line, i))
 	}
 	return stashEntries
 }

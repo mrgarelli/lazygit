@@ -521,7 +521,7 @@ func (gui *Gui) refreshStateFiles() error {
 	prevNodes := gui.State.FileManager.GetAllItems()
 	prevSelectedLineIdx := gui.State.Panels.Files.SelectedLineIdx
 
-	files := gui.Git.Worktree().GetStatusFiles(commands.LoadStatusFilesOpts{})
+	files := gui.Git.Worktree().LoadStatusFiles(commands.LoadStatusFilesOpts{})
 
 	// for when you stage the old file of a rename and the new file is in a collapsed dir
 	state.FileManager.RWMutex.Lock()

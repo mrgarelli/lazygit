@@ -17,7 +17,7 @@ import (
 
 //counterfeiter:generate . IWorktreeMgr
 type IWorktreeMgr interface {
-	GetStatusFiles(opts LoadStatusFilesOpts) []*models.File
+	LoadStatusFiles(opts LoadStatusFilesOpts) []*models.File
 	OpenMergeToolCmdObj() ICmdObj
 	StageFile(fileName string) error
 	StageAll() error
@@ -38,31 +38,31 @@ type IWorktreeMgr interface {
 }
 
 type WorktreeMgr struct {
-	statusFileListBuilder *StatusFileListBuilder
-	commander             ICommander
-	config                IGitConfigMgr
-	log                   *logrus.Entry
-	os                    oscommands.IOS
-	branchesMgr           IBranchesMgr
-	submodulesMgr         ISubmodulesMgr
+	statusFilesLoader *StatusFilesLoader
+	commander         ICommander
+	config            IGitConfigMgr
+	log               *logrus.Entry
+	os                oscommands.IOS
+	branchesMgr       IBranchesMgr
+	submodulesMgr     ISubmodulesMgr
 }
 
 func NewWorktreeMgr(commander ICommander, config IGitConfigMgr, branchesMgr IBranchesMgr, submodulesMgr ISubmodulesMgr, log *logrus.Entry, oS *oscommands.OS) *WorktreeMgr {
-	statusFileListBuilder := NewStatusFileListBuilder(commander, config, log, oS)
+	statusFilesLoader := NewStatusFilesLoader(commander, config, log, oS)
 
 	return &WorktreeMgr{
-		statusFileListBuilder: statusFileListBuilder,
-		commander:             commander,
-		config:                config,
-		branchesMgr:           branchesMgr,
-		submodulesMgr:         submodulesMgr,
-		os:                    oS,
-		log:                   log,
+		statusFilesLoader: statusFilesLoader,
+		commander:         commander,
+		config:            config,
+		branchesMgr:       branchesMgr,
+		submodulesMgr:     submodulesMgr,
+		os:                oS,
+		log:               log,
 	}
 }
 
-func (c *WorktreeMgr) GetStatusFiles(opts LoadStatusFilesOpts) []*models.File {
-	return c.statusFileListBuilder.GetStatusFiles(opts)
+func (c *WorktreeMgr) LoadStatusFiles(opts LoadStatusFilesOpts) []*models.File {
+	return c.statusFilesLoader.Load(opts)
 }
 
 func (c *WorktreeMgr) OpenMergeToolCmdObj() ICmdObj {
@@ -110,7 +110,7 @@ func (c *WorktreeMgr) beforeAndAfterFileForRename(file *models.File) (*models.Fi
 	// all files, passing the --no-renames flag and then recursively call the function
 	// again for the before file and after file.
 
-	filesWithoutRenames := c.GetStatusFiles(LoadStatusFilesOpts{NoRenames: true})
+	filesWithoutRenames := c.LoadStatusFiles(LoadStatusFilesOpts{NoRenames: true})
 	var beforeFile *models.File
 	var afterFile *models.File
 	for _, f := range filesWithoutRenames {
