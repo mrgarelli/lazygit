@@ -20,7 +20,7 @@ func (gui *Gui) handleCreateTag() error {
 		Title: gui.Tr.CreateTagTitle,
 		HandleConfirm: func(tagName string) error {
 			// leaving commit SHA blank so that we're just creating the tag for the current commit
-			if err := gui.Git.WithSpan(gui.Tr.Spans.CreateLightweightTag).CreateLightweightTag(tagName, ""); err != nil {
+			if err := gui.Git.WithSpan(gui.Tr.Spans.CreateLightweightTag).Tags().CreateLightweightTag(tagName, ""); err != nil {
 				return gui.SurfaceError(err)
 			}
 			return gui.RefreshSidePanels(RefreshOptions{Scope: []RefreshableView{COMMITS, TAGS}, Then: func() {
@@ -62,7 +62,7 @@ func (gui *Gui) handleTagSelect() error {
 
 // this is a controller: it can't access tags directly. Or can it? It should be able to get but not set. But that's exactly what I'm doing here, setting it. but through a mutator which encapsulates the event.
 func (gui *Gui) refreshTags() error {
-	tags, err := gui.Git.GetTags()
+	tags, err := gui.Git.Tags().GetTags()
 	if err != nil {
 		return gui.SurfaceError(err)
 	}
@@ -102,7 +102,7 @@ func (gui *Gui) handleDeleteTag(tag *models.Tag) error {
 		Title:  gui.Tr.DeleteTagTitle,
 		Prompt: prompt,
 		HandleConfirm: func() error {
-			if err := gui.Git.WithSpan(gui.Tr.Spans.DeleteTag).DeleteTag(tag.Name); err != nil {
+			if err := gui.Git.WithSpan(gui.Tr.Spans.DeleteTag).Tags().DeleteTag(tag.Name); err != nil {
 				return gui.SurfaceError(err)
 			}
 			return gui.RefreshSidePanels(RefreshOptions{Mode: ASYNC, Scope: []RefreshableView{COMMITS, TAGS}})

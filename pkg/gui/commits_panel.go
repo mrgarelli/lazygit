@@ -582,7 +582,7 @@ func (gui *Gui) handleCreateLightweightTag(commitSha string) error {
 	return gui.Prompt(PromptOpts{
 		Title: gui.Tr.TagNameTitle,
 		HandleConfirm: func(response string) error {
-			if err := gui.Git.WithSpan(gui.Tr.Spans.CreateLightweightTag).CreateLightweightTag(response, commitSha); err != nil {
+			if err := gui.Git.WithSpan(gui.Tr.Spans.CreateLightweightTag).Tags().CreateLightweightTag(response, commitSha); err != nil {
 				return gui.SurfaceError(err)
 			}
 			return gui.RefreshSidePanels(RefreshOptions{Mode: ASYNC, Scope: []RefreshableView{COMMITS, TAGS}})

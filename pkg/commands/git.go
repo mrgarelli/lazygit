@@ -32,6 +32,7 @@ const CurrentBranchNameRegex = `(?m)^\*.*?([^ ]*?)\)?$`
 type Git struct {
 	*Commander
 	*GitConfigMgr
+	tagsMgr              *TagsMgr
 	commitsMgr           *CommitsMgr
 	branchesMgr          *BranchesMgr
 	worktreeMgr          *WorktreeMgr
@@ -72,6 +73,7 @@ func NewGit(log *logrus.Entry, oS *oscommands.OS, tr *i18n.TranslationSet, confi
 
 	commander := NewCommander(oS.RunWithOutput, log, oS.GetLazygitPath(), oS.Quote)
 	gitConfig := NewGitConfigMgr(commander, config.GetUserConfig(), config.GetUserConfigDir(), getGitConfigValue, log)
+	tagsMgr := NewTagsMgr(commander, gitConfig)
 	branchesMgr := NewBranchesMgr(commander, gitConfig, log)
 	submodulesMgr := NewSubmodulesMgr(commander, gitConfig, log, dotGitDir)
 	worktreeMgr := NewWorktreeMgr(commander, gitConfig, branchesMgr, submodulesMgr, log, oS)
@@ -82,6 +84,7 @@ func NewGit(log *logrus.Entry, oS *oscommands.OS, tr *i18n.TranslationSet, confi
 	gitCommand := &Git{
 		Commander:     commander,
 		GitConfigMgr:  gitConfig,
+		tagsMgr:       tagsMgr,
 		commitsMgr:    commitsMgr,
 		branchesMgr:   branchesMgr,
 		worktreeMgr:   worktreeMgr,
@@ -121,6 +124,10 @@ func (c *Git) Status() IStatusMgr {
 
 func (c *Git) Stash() IStashMgr {
 	return c.stashMgr
+}
+
+func (c *Git) Tags() ITagsMgr {
+	return c.tagsMgr
 }
 
 func (c *Git) Quote(str string) string {

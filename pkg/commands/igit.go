@@ -18,6 +18,7 @@ type IGit interface {
 	Submodules() ISubmodulesMgr
 	Status() IStatusMgr
 	Stash() IStashMgr
+	Tags() ITagsMgr
 
 	// config
 	IGitConfigMgr
@@ -50,7 +51,6 @@ type IGit interface {
 	GetFilesInDiff(from string, to string, reverse bool) ([]*models.CommitFile, error)
 	GetReflogCommits(lastReflogCommit *models.Commit, filterPath string) ([]*models.Commit, bool, error)
 	GetRemotes() ([]*models.Remote, error)
-	GetTags() ([]*models.Tag, error)
 
 	// patch
 	NewPatchManager() *patch.PatchManager
@@ -97,8 +97,4 @@ type IGit interface {
 	FastForward(branchName string, remoteName string, remoteBranchName string) error
 	FetchRemote(remoteName string) error
 	PushRef(remoteName string, refName string) error
-
-	// tags
-	DeleteTag(tagName string) error
-	CreateLightweightTag(tagName string, commitSha string) error
 }
