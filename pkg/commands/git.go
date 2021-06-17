@@ -36,12 +36,6 @@ type IGit interface {
 	GetOS() oscommands.IOS
 }
 
-// this takes something like:
-// * (HEAD detached at 264fc6f5)
-//	remotes
-// and returns '264fc6f5' as the second match
-const CurrentBranchNameRegex = `(?m)^\*.*?([^ ]*?)\)?$`
-
 // Git is our main git interface
 type Git struct {
 	*Commander
