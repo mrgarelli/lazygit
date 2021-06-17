@@ -12,6 +12,9 @@ import (
 
 //counterfeiter:generate . IGit
 type IGit interface {
+	ICommander
+	IGitConfigMgr
+
 	Branches() IBranchesMgr
 	Commits() ICommitsMgr
 	Worktree() IWorktreeMgr
@@ -24,11 +27,6 @@ type IGit interface {
 	Sync() ISyncMgr
 	Flow() IFlowMgr
 
-	// config
-	IGitConfigMgr
-
-	FindRemoteForBranchInConfig(branchName string) (string, error)
-
 	// diffing
 	WorktreeFileDiff(file *models.File, plain bool, cached bool) string
 	WorktreeFileDiffCmdObj(node models.IFile, plain bool, cached bool) ICmdObj
@@ -36,9 +34,6 @@ type IGit interface {
 	ShowFileDiffCmdObj(from string, to string, reverse bool, path string, plain bool, showRenames bool) ICmdObj
 	DiffEndArgs(from string, to string, reverse bool, path string) string
 	GetFilesInDiff(from string, to string, reverse bool) ([]*models.CommitFile, error)
-
-	// commands
-	ICommander
 
 	// common
 	GetLog() *logrus.Entry
