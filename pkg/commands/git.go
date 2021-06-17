@@ -92,7 +92,16 @@ func NewGit(log *logrus.Entry, oS *oscommands.OS, tr *i18n.TranslationSet, confi
 	}
 
 	commander := NewCommander(oS.RunWithOutput, log, oS.GetLazygitPath(), oS.Quote)
-	gitConfig := NewGitConfigMgr(commander, config.GetUserConfig(), config.GetUserConfigDir(), getGitConfigValue, log, repo, config.GetDebug(), dotGitDir)
+	gitConfig := NewGitConfigMgr(
+		commander,
+		config.GetUserConfig(),
+		config.GetUserConfigDir(),
+		getGitConfigValue,
+		log,
+		repo,
+		config.GetDebug(),
+		dotGitDir,
+	)
 
 	mgrCtx := &MgrCtx{
 		ICommander: commander,
