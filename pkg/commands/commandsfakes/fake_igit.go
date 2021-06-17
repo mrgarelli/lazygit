@@ -1404,7 +1404,7 @@ func (fake *FakeIGit) AbortRebaseReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeIGit) AddRemote(arg1 string, arg2 string) error {
+func (fake *FakeIGit) Add(arg1 string, arg2 string) error {
 	fake.addRemoteMutex.Lock()
 	ret, specificReturn := fake.addRemoteReturnsOnCall[len(fake.addRemoteArgsForCall)]
 	fake.addRemoteArgsForCall = append(fake.addRemoteArgsForCall, struct {
@@ -1413,7 +1413,7 @@ func (fake *FakeIGit) AddRemote(arg1 string, arg2 string) error {
 	}{arg1, arg2})
 	stub := fake.AddRemoteStub
 	fakeReturns := fake.addRemoteReturns
-	fake.recordInvocation("AddRemote", []interface{}{arg1, arg2})
+	fake.recordInvocation("Add", []interface{}{arg1, arg2})
 	fake.addRemoteMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)
@@ -1962,7 +1962,7 @@ func (fake *FakeIGit) CatFileReturnsOnCall(i int, result1 string, result2 error)
 	}{result1, result2}
 }
 
-func (fake *FakeIGit) CheckRemoteBranchExists(arg1 *models.Branch) bool {
+func (fake *FakeIGit) RemoteBranchExists(arg1 *models.Branch) bool {
 	fake.checkRemoteBranchExistsMutex.Lock()
 	ret, specificReturn := fake.checkRemoteBranchExistsReturnsOnCall[len(fake.checkRemoteBranchExistsArgsForCall)]
 	fake.checkRemoteBranchExistsArgsForCall = append(fake.checkRemoteBranchExistsArgsForCall, struct {
@@ -1970,7 +1970,7 @@ func (fake *FakeIGit) CheckRemoteBranchExists(arg1 *models.Branch) bool {
 	}{arg1})
 	stub := fake.CheckRemoteBranchExistsStub
 	fakeReturns := fake.checkRemoteBranchExistsReturns
-	fake.recordInvocation("CheckRemoteBranchExists", []interface{}{arg1})
+	fake.recordInvocation("RemoteBranchExists", []interface{}{arg1})
 	fake.checkRemoteBranchExistsMutex.Unlock()
 	if stub != nil {
 		return stub(arg1)
@@ -4326,14 +4326,14 @@ func (fake *FakeIGit) GetReflogCommitsReturnsOnCall(i int, result1 []*models.Com
 	}{result1, result2, result3}
 }
 
-func (fake *FakeIGit) GetRemoteURL() string {
+func (fake *FakeIGit) GetCurrentRemoteUrl() string {
 	fake.getRemoteURLMutex.Lock()
 	ret, specificReturn := fake.getRemoteURLReturnsOnCall[len(fake.getRemoteURLArgsForCall)]
 	fake.getRemoteURLArgsForCall = append(fake.getRemoteURLArgsForCall, struct {
 	}{})
 	stub := fake.GetRemoteURLStub
 	fakeReturns := fake.getRemoteURLReturns
-	fake.recordInvocation("GetRemoteURL", []interface{}{})
+	fake.recordInvocation("GetCurrentRemoteUrl", []interface{}{})
 	fake.getRemoteURLMutex.Unlock()
 	if stub != nil {
 		return stub()
@@ -5943,7 +5943,7 @@ func (fake *FakeIGit) RebaseModeReturnsOnCall(i int, result1 commands.RebasingMo
 	}{result1, result2}
 }
 
-func (fake *FakeIGit) RemoveRemote(arg1 string) error {
+func (fake *FakeIGit) Remove(arg1 string) error {
 	fake.removeRemoteMutex.Lock()
 	ret, specificReturn := fake.removeRemoteReturnsOnCall[len(fake.removeRemoteArgsForCall)]
 	fake.removeRemoteArgsForCall = append(fake.removeRemoteArgsForCall, struct {
@@ -5951,7 +5951,7 @@ func (fake *FakeIGit) RemoveRemote(arg1 string) error {
 	}{arg1})
 	stub := fake.RemoveRemoteStub
 	fakeReturns := fake.removeRemoteReturns
-	fake.recordInvocation("RemoveRemote", []interface{}{arg1})
+	fake.recordInvocation("Remove", []interface{}{arg1})
 	fake.removeRemoteMutex.Unlock()
 	if stub != nil {
 		return stub(arg1)
@@ -6179,7 +6179,7 @@ func (fake *FakeIGit) RemoveUntrackedFilesReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeIGit) RenameRemote(arg1 string, arg2 string) error {
+func (fake *FakeIGit) Rename(arg1 string, arg2 string) error {
 	fake.renameRemoteMutex.Lock()
 	ret, specificReturn := fake.renameRemoteReturnsOnCall[len(fake.renameRemoteArgsForCall)]
 	fake.renameRemoteArgsForCall = append(fake.renameRemoteArgsForCall, struct {
@@ -6188,7 +6188,7 @@ func (fake *FakeIGit) RenameRemote(arg1 string, arg2 string) error {
 	}{arg1, arg2})
 	stub := fake.RenameRemoteStub
 	fakeReturns := fake.renameRemoteReturns
-	fake.recordInvocation("RenameRemote", []interface{}{arg1, arg2})
+	fake.recordInvocation("Rename", []interface{}{arg1, arg2})
 	fake.renameRemoteMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)
@@ -7928,7 +7928,7 @@ func (fake *FakeIGit) UnstageAllReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeIGit) UpdateRemoteUrl(arg1 string, arg2 string) error {
+func (fake *FakeIGit) UpdateUrl(arg1 string, arg2 string) error {
 	fake.updateRemoteUrlMutex.Lock()
 	ret, specificReturn := fake.updateRemoteUrlReturnsOnCall[len(fake.updateRemoteUrlArgsForCall)]
 	fake.updateRemoteUrlArgsForCall = append(fake.updateRemoteUrlArgsForCall, struct {
@@ -7937,7 +7937,7 @@ func (fake *FakeIGit) UpdateRemoteUrl(arg1 string, arg2 string) error {
 	}{arg1, arg2})
 	stub := fake.UpdateRemoteUrlStub
 	fakeReturns := fake.updateRemoteUrlReturns
-	fake.recordInvocation("UpdateRemoteUrl", []interface{}{arg1, arg2})
+	fake.recordInvocation("UpdateUrl", []interface{}{arg1, arg2})
 	fake.updateRemoteUrlMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)

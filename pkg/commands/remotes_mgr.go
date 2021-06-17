@@ -13,12 +13,12 @@ import (
 
 //counterfeiter:generate . IRemotesMgr
 type IRemotesMgr interface {
-	AddRemote(name string, url string) error
-	RemoveRemote(name string) error
-	RenameRemote(oldRemoteName string, newRemoteName string) error
-	UpdateRemoteUrl(remoteName string, updatedUrl string) error
-	CheckRemoteBranchExists(branch *models.Branch) bool
-	GetRemoteURL() string
+	Add(name string, url string) error
+	Remove(name string) error
+	Rename(oldRemoteName string, newRemoteName string) error
+	UpdateUrl(remoteName string, updatedUrl string) error
+	RemoteBranchExists(branch *models.Branch) bool
+	GetCurrentRemoteUrl() string
 	GetRemotes() ([]*models.Remote, error)
 }
 
@@ -41,24 +41,24 @@ func NewRemotesMgr(
 	}
 }
 
-func (c *RemotesMgr) AddRemote(name string, url string) error {
+func (c *RemotesMgr) Add(name string, url string) error {
 	return c.RunGitCmdFromStr(fmt.Sprintf("remote add %s %s", name, url))
 }
 
-func (c *RemotesMgr) RemoveRemote(name string) error {
+func (c *RemotesMgr) Remove(name string) error {
 	return c.RunGitCmdFromStr(fmt.Sprintf("remote remove %s", name))
 }
 
-func (c *RemotesMgr) RenameRemote(oldRemoteName string, newRemoteName string) error {
+func (c *RemotesMgr) Rename(oldRemoteName string, newRemoteName string) error {
 	return c.RunGitCmdFromStr(fmt.Sprintf("remote rename %s %s", oldRemoteName, newRemoteName))
 }
 
-func (c *RemotesMgr) UpdateRemoteUrl(remoteName string, updatedUrl string) error {
+func (c *RemotesMgr) UpdateUrl(remoteName string, updatedUrl string) error {
 	return c.RunGitCmdFromStr(fmt.Sprintf("remote set-url %s %s", remoteName, updatedUrl))
 }
 
 // CheckRemoteBranchExists Returns remote branch
-func (c *RemotesMgr) CheckRemoteBranchExists(branch *models.Branch) bool {
+func (c *RemotesMgr) RemoteBranchExists(branch *models.Branch) bool {
 	_, err := c.RunWithOutput(
 		BuildGitCmdObjFromStr(
 			fmt.Sprintf("show-ref --verify -- refs/remotes/origin/%s",
@@ -70,7 +70,7 @@ func (c *RemotesMgr) CheckRemoteBranchExists(branch *models.Branch) bool {
 }
 
 // GetRemoteURL returns current repo remote url
-func (c *RemotesMgr) GetRemoteURL() string {
+func (c *RemotesMgr) GetCurrentRemoteUrl() string {
 	return c.config.GetConfigValue("remote.origin.url")
 }
 
