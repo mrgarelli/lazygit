@@ -26,6 +26,7 @@ type IGit interface {
 	Reflog() IReflogMgr
 	Sync() ISyncMgr
 	Flow() IFlowMgr
+	Rebasing() IRebasingMgr
 
 	// diffing
 	WorktreeFileDiff(file *models.File, plain bool, cached bool) string
@@ -46,26 +47,4 @@ type IGit interface {
 	MovePatchToSelectedCommit(commits []*models.Commit, sourceCommitIdx int, destinationCommitIdx int, p *patch.PatchManager) error
 	MovePatchIntoIndex(commits []*models.Commit, commitIdx int, p *patch.PatchManager, stash bool) error
 	PullPatchIntoNewCommit(commits []*models.Commit, commitIdx int, p *patch.PatchManager) error
-
-	// rebasing
-	DiscardOldFileChanges(commits []*models.Commit, commitIndex int, fileName string) error
-	GenericAbortCmdObj() ICmdObj
-	GenericContinueCmdObj() ICmdObj
-	GenericMergeOrRebaseCmdObj(action string) ICmdObj
-	AbortRebase() error
-	ContinueRebase() error
-	MergeOrRebase() string
-	GetRewordCommitCmdObj(commits []*models.Commit, index int) (ICmdObj, error)
-	MoveCommitDown(commits []*models.Commit, index int) error
-	InteractiveRebase(commits []*models.Commit, index int, action string) error
-	InteractiveRebaseCmdObj(baseSha string, todo string, overrideEditor bool) ICmdObj
-	GenerateGenericRebaseTodo(commits []*models.Commit, actionIndex int, action string) (string, string, error)
-	AmendTo(sha string) error
-	EditRebaseTodo(index int, action string) error
-	MoveTodoDown(index int) error
-	SquashAllAboveFixupCommits(sha string) error
-	BeginInteractiveRebaseForCommit(commits []*models.Commit, commitIndex int) error
-	RebaseBranch(branchName string) error
-	GenericMergeOrRebaseAction(commandType string, command string) error
-	CherryPickCommits(commits []*models.Commit) error
 }

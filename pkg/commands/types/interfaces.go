@@ -12,6 +12,7 @@ type IGitConfigMgr interface {
 	GetPushToCurrent() bool
 	GetUserConfigDir() string
 	FindRemoteForBranchInConfig(branchName string) (string, error)
+	GetDebug() bool
 }
 
 //counterfeiter:generate . ICommander

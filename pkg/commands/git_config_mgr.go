@@ -24,15 +24,17 @@ type GitConfigMgr struct {
 	userConfig        *config.UserConfig
 	userConfigDir     string
 	getGitConfigValue getGitConfigValueFunc
+	debug             bool
 }
 
-func NewGitConfigMgr(commander ICommander, userConfig *config.UserConfig, userConfigDir string, getGitConfigValue getGitConfigValueFunc, log *logrus.Entry, repo *gogit.Repository) *GitConfigMgr {
+func NewGitConfigMgr(commander ICommander, userConfig *config.UserConfig, userConfigDir string, getGitConfigValue getGitConfigValueFunc, log *logrus.Entry, repo *gogit.Repository, debug bool) *GitConfigMgr {
 	gitConfig := &GitConfigMgr{
 		ICommander:        commander,
 		getGitConfigValue: getGitConfigValue,
 		userConfig:        userConfig,
 		userConfigDir:     userConfigDir,
 		repo:              repo,
+		debug:             debug,
 	}
 
 	output, err := commander.RunWithOutput(
@@ -128,4 +130,8 @@ func (c *GitConfigMgr) FindRemoteForBranchInConfig(branchName string) (string, e
 
 func (c *GitConfigMgr) GetPushToCurrent() bool {
 	return c.pushToCurrent
+}
+
+func (c *GitConfigMgr) GetDebug() bool {
+	return c.debug
 }
