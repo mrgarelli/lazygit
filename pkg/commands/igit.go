@@ -20,6 +20,7 @@ type IGit interface {
 	Stash() IStashMgr
 	Tags() ITagsMgr
 	Remotes() IRemotesMgr
+	Reflog() IReflogMgr
 
 	// config
 	IGitConfigMgr
@@ -36,8 +37,6 @@ type IGit interface {
 	// commands
 	ICommander
 
-	SetCredentialHandlers(promptUserForCredential func(CredentialKind) string, handleCredentialError func(error))
-
 	// common
 	GetLog() *logrus.Entry
 	WithSpan(span string) IGit
@@ -50,7 +49,6 @@ type IGit interface {
 
 	// loaders
 	GetFilesInDiff(from string, to string, reverse bool) ([]*models.CommitFile, error)
-	GetReflogCommits(lastReflogCommit *models.Commit, filterPath string) ([]*models.Commit, bool, error)
 
 	// patch
 	NewPatchManager() *patch.PatchManager
@@ -89,4 +87,5 @@ type IGit interface {
 	FetchRemote(remoteName string) error
 	PushRef(remoteName string, refName string) error
 	DeleteRemoteRef(remoteName string, ref string) error
+	SetCredentialHandlers(promptUserForCredential func(CredentialKind) string, handleCredentialError func(error))
 }
