@@ -105,7 +105,7 @@ func NewGit(log *logrus.Entry, oS *oscommands.OS, tr *i18n.TranslationSet, confi
 
 	tagsMgr := NewTagsMgr(mgrCtx)
 	remotesMgr := NewRemotesMgr(mgrCtx)
-	branchesMgr := NewBranchesMgr(commander, gitConfig, log)
+	branchesMgr := NewBranchesMgr(mgrCtx)
 	submodulesMgr := NewSubmodulesMgr(commander, gitConfig, log)
 	worktreeMgr := NewWorktreeMgr(commander, gitConfig, branchesMgr, submodulesMgr, log, oS)
 	statusMgr := NewStatusMgr(commander, gitConfig, oS, repo, log)
