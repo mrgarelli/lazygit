@@ -62,12 +62,11 @@ type Git struct {
 	rebasingMgr   *RebasingMgr
 	diffMgr       *DiffMgr
 
-	log       *logrus.Entry
-	os        oscommands.IOS
-	repo      *gogit.Repository
-	tr        *i18n.TranslationSet
-	config    config.AppConfigurer
-	dotGitDir string
+	log    *logrus.Entry
+	os     oscommands.IOS
+	repo   *gogit.Repository
+	tr     *i18n.TranslationSet
+	config config.AppConfigurer
 }
 
 func (c *Git) GetLog() *logrus.Entry {
@@ -149,7 +148,6 @@ func NewGit(log *logrus.Entry, oS *oscommands.OS, tr *i18n.TranslationSet, confi
 		tr:            tr,
 		repo:          repo,
 		config:        config,
-		dotGitDir:     dotGitDir,
 	}
 
 	return gitCommand, nil
