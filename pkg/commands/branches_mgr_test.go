@@ -34,7 +34,7 @@ var _ = Describe("BranchesMgr", func() {
 
 	Describe("NewBranch", func() {
 		It("runs expected command", func() {
-			SetExpectedRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+			ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
 				{"git checkout -b newName master", "", nil},
 			})
 
@@ -63,7 +63,7 @@ var _ = Describe("BranchesMgr", func() {
 	Describe("Delete", func() {
 		Context("when force flag is true", func() {
 			It("runs expected command", func() {
-				SetExpectedRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+				ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
 					{"git branch -D mybranch", "", nil},
 				})
 
@@ -74,7 +74,7 @@ var _ = Describe("BranchesMgr", func() {
 
 		Context("when force flag is false", func() {
 			It("runs expected command", func() {
-				SetExpectedRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+				ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
 					{"git branch -d mybranch", "", nil},
 				})
 
@@ -87,7 +87,7 @@ var _ = Describe("BranchesMgr", func() {
 	Describe("Merge", func() {
 		Context("default case", func() {
 			It("runs expected command", func() {
-				SetExpectedRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+				ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
 					{"git merge --no-edit mybranch", "", nil},
 				})
 
@@ -98,7 +98,7 @@ var _ = Describe("BranchesMgr", func() {
 
 		Context("when fast-forward only arg is passed", func() {
 			It("runs expected command", func() {
-				SetExpectedRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+				ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
 					{"git merge --no-edit --ff-only mybranch", "", nil},
 				})
 
@@ -110,7 +110,7 @@ var _ = Describe("BranchesMgr", func() {
 				It("runs expected command", func() {
 					userConfig.Git.Merging.Args = "--extra-arg"
 
-					SetExpectedRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+					ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
 						{"git merge --no-edit --ff-only --extra-arg mybranch", "", nil},
 					})
 
@@ -124,7 +124,7 @@ var _ = Describe("BranchesMgr", func() {
 	Describe("Checkout", func() {
 		Context("non-forced", func() {
 			It("runs expected command", func() {
-				SetExpectedRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+				ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
 					{"git checkout mybranch", "", nil},
 				})
 
@@ -135,7 +135,7 @@ var _ = Describe("BranchesMgr", func() {
 
 		Context("forced", func() {
 			It("runs expected command", func() {
-				SetExpectedRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+				ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
 					{"git checkout --force mybranch", "", nil},
 				})
 
@@ -147,7 +147,7 @@ var _ = Describe("BranchesMgr", func() {
 
 	Describe("ResetToRef", func() {
 		It("runs expected command", func() {
-			SetExpectedRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+			ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
 				{"git reset --hard HEAD", "", nil},
 			})
 

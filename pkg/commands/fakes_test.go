@@ -41,7 +41,7 @@ type ExpectedRunWithOutputCall struct {
 	outputErr error
 }
 
-func SetExpectedRunWithOutputCalls(commander *FakeICommander, expectedCalls []ExpectedRunWithOutputCall) {
+func ExpectRunWithOutputCalls(commander *FakeICommander, expectedCalls []ExpectedRunWithOutputCall) {
 	i := 0
 	commander.RunWithOutputCalls(func(cmdObj ICmdObj) (string, error) {
 		// we shouldn't be calling this function any more times than we expect
@@ -56,5 +56,13 @@ func SetExpectedRunWithOutputCalls(commander *FakeICommander, expectedCalls []Ex
 }
 
 func NewFakeMgrCtx(commander *FakeICommander, config *FakeIGitConfigMgr) *commands.MgrCtx {
+	if config == nil {
+		config = &FakeIGitConfigMgr{}
+	}
+
+	if commander == nil {
+		commander = &FakeICommander{}
+	}
+
 	return commands.NewMgrCtx(commander, config, nil, utils.NewDummyLog(), nil, i18n.EnglishTranslationSet())
 }
