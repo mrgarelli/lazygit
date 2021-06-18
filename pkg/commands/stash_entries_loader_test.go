@@ -27,57 +27,57 @@ var _ = Describe("StashEntriesLoader", func() {
 		Context("not filtering by path", func() {
 			Context("stash entries exist", func() {
 				It("returns stash entries", func() {
-					ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
+					WithRunCalls(commander, []ExpectedRunCall{
 						{
 							cmdStr:    "git stash list --pretty='%gs'",
 							outputStr: "WIP on mybranch: 55c6af2 foo\nWIP on master: bb86a3f bar",
 							outputErr: nil,
 						},
+					}, func() {
+						stashEntries := StashEntriesLoader.Load("")
+						Expect(stashEntries).To(Equal(
+							[]*models.StashEntry{
+								{
+									Index: 0,
+									Name:  "WIP on mybranch: 55c6af2 foo",
+								},
+								{
+									Index: 1,
+									Name:  "WIP on master: bb86a3f bar",
+								},
+							},
+						))
 					})
-
-					stashEntries := StashEntriesLoader.Load("")
-					Expect(stashEntries).To(Equal(
-						[]*models.StashEntry{
-							{
-								Index: 0,
-								Name:  "WIP on mybranch: 55c6af2 foo",
-							},
-							{
-								Index: 1,
-								Name:  "WIP on master: bb86a3f bar",
-							},
-						},
-					))
 				})
 			})
 
 			Context("no stash entries exist", func() {
 				It("returns empty array", func() {
-					ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
+					WithRunCalls(commander, []ExpectedRunCall{
 						{
 							cmdStr:    "git stash list --pretty='%gs'",
 							outputStr: "\n",
 							outputErr: nil,
 						},
+					}, func() {
+						stashEntries := StashEntriesLoader.Load("")
+						Expect(stashEntries).To(Equal([]*models.StashEntry{}))
 					})
-
-					stashEntries := StashEntriesLoader.Load("")
-					Expect(stashEntries).To(Equal([]*models.StashEntry{}))
 				})
 			})
 
 			Context("error is raised by command", func() {
 				It("returns empty array", func() {
-					ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
+					WithRunCalls(commander, []ExpectedRunCall{
 						{
 							cmdStr:    "git stash list --pretty='%gs'",
 							outputStr: "",
 							outputErr: errors.New("my error"),
 						},
+					}, func() {
+						stashEntries := StashEntriesLoader.Load("")
+						Expect(stashEntries).To(Equal([]*models.StashEntry{}))
 					})
-
-					stashEntries := StashEntriesLoader.Load("")
-					Expect(stashEntries).To(Equal([]*models.StashEntry{}))
 				})
 			})
 		})
@@ -98,49 +98,49 @@ pkg/gui/handlers/sync/push_files/mocks/Gui.go`
 
 			Context("stash entries exist", func() {
 				It("returns stash entries", func() {
-					ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
+					WithRunCalls(commander, []ExpectedRunCall{
 						{
 							cmdStr:    "git stash list --name-only",
 							outputStr: output,
 							outputErr: nil,
 						},
+					}, func() {
+						stashEntries := StashEntriesLoader.Load("pkg/commands/loaders/files.go")
+						Expect(stashEntries).To(Equal(
+							[]*models.StashEntry{
+								{
+									Index: 0,
+									Name:  "On mybranch: foo",
+								},
+								{
+									Index: 2,
+									Name:  "On otherbranch: mocking",
+								},
+							},
+						))
 					})
-
-					stashEntries := StashEntriesLoader.Load("pkg/commands/loaders/files.go")
-					Expect(stashEntries).To(Equal(
-						[]*models.StashEntry{
-							{
-								Index: 0,
-								Name:  "On mybranch: foo",
-							},
-							{
-								Index: 2,
-								Name:  "On otherbranch: mocking",
-							},
-						},
-					))
 				})
 			})
 
 			Context("no stash entries exist", func() {
 				It("returns empty array", func() {
-					ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
+					WithRunCalls(commander, []ExpectedRunCall{
 						{
 							cmdStr:    "git stash list --name-only",
 							outputStr: "\n",
 							outputErr: nil,
 						},
+					}, func() {
+						stashEntries := StashEntriesLoader.Load("pkg/commands/loaders/files.go")
+						Expect(stashEntries).To(Equal([]*models.StashEntry{}))
 					})
-
-					stashEntries := StashEntriesLoader.Load("pkg/commands/loaders/files.go")
-					Expect(stashEntries).To(Equal([]*models.StashEntry{}))
 				})
 			})
 
 			Context("error is raised by command", func() {
 				// not sure if we should actually do this
 				It("falls back to unfiltered search", func() {
-					ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
+					WithRunCalls(commander, []ExpectedRunCall{
 						{
 							cmdStr:    "git stash list --name-only",
 							outputStr: "",
@@ -151,18 +151,18 @@ pkg/gui/handlers/sync/push_files/mocks/Gui.go`
 							outputStr: "WIP on mybranch: 55c6af2 foo\nWIP on master: bb86a3f bar",
 							outputErr: nil,
 						},
-					})
-
-					stashEntries := StashEntriesLoader.Load("pkg/commands/loaders/files.go")
-					Expect(stashEntries).To(Equal([]*models.StashEntry{{
-						Index: 0,
-						Name:  "WIP on mybranch: 55c6af2 foo",
-					},
-						{
-							Index: 1,
-							Name:  "WIP on master: bb86a3f bar",
+					}, func() {
+						stashEntries := StashEntriesLoader.Load("pkg/commands/loaders/files.go")
+						Expect(stashEntries).To(Equal([]*models.StashEntry{{
+							Index: 0,
+							Name:  "WIP on mybranch: 55c6af2 foo",
 						},
-					}))
+							{
+								Index: 1,
+								Name:  "WIP on master: bb86a3f bar",
+							},
+						}))
+					})
 				})
 			})
 		})

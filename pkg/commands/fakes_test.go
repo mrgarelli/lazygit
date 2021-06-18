@@ -43,23 +43,6 @@ type ExpectedRunCall struct {
 	outputErr error
 }
 
-func ExpectRunWithOutputCalls(commander *FakeICommander, expectedCalls []ExpectedRunCall) {
-	i := 0
-	commander.RunWithOutputCalls(func(cmdObj ICmdObj) (string, error) {
-		// we shouldn't be calling this function any more times than we expect
-		Expect(i).To(
-			BeNumerically("<", len(expectedCalls)),
-			"Unexpected call of RunWithOutput:\n\t%s\n\nThis means the function you're testing has attempted to run more commands than expected. If the function is doing its job properly, you'll need to append the command to the `ExpectRunWithOutputCalls` call", cmdObj.ToString(),
-		)
-
-		call := expectedCalls[i]
-		i += 1
-
-		Expect(cmdObj.ToString()).To(Equal(call.cmdStr))
-		return call.outputStr, call.outputErr
-	})
-}
-
 func WithRunCalls(
 	commander *FakeICommander, expectedCalls []ExpectedRunCall, f func(),
 ) {
@@ -68,7 +51,7 @@ func WithRunCalls(
 		// we shouldn't be calling this function any more times than we expect
 		Expect(i).To(
 			BeNumerically("<", len(expectedCalls)),
-			"Unexpected call of RunWithOutput:\n\t%s\n\nThis means the function you're testing has attempted to run more commands than expected. If the function is doing its job properly, you'll need to append the command to the `ExpectRunWithOutputCalls` call", cmdObj.ToString(),
+			"Unexpected call of RunWithOutput:\n\t%s\n\nThis means the function you're testing has attempted to run more commands than expected. If the function is doing its job properly, you'll need to append the command to the `WithRunCalls` call", cmdObj.ToString(),
 		)
 
 		call := expectedCalls[i]
