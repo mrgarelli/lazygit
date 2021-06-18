@@ -20,7 +20,7 @@ var _ = Describe("StatusMgr", func() {
 		commander = NewFakeCommander()
 		gitconfig = &FakeIGitConfigMgr{}
 
-		mgrCtx = NewFakeMgrCtx(commander, gitconfig)
+		mgrCtx = NewFakeMgrCtx(commander, gitconfig, nil)
 
 		StatusMgr = NewStatusMgr(mgrCtx)
 	})
@@ -28,7 +28,7 @@ var _ = Describe("StatusMgr", func() {
 	Describe("CurrentBranchName", func() {
 		Context("On master branch", func() {
 			It("returns 'master'", func() {
-				ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+				ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 					{"git symbolic-ref --short HEAD", "master\n", nil},
 				})
 
@@ -42,7 +42,7 @@ var _ = Describe("StatusMgr", func() {
 		Context("symbolic-ref fails", func() {
 			Context("when git branch command says we're on master", func() {
 				It("falls back to 'git branch --contains'", func() {
-					ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+					ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 						{"git symbolic-ref --short HEAD", "", errors.New("my error")},
 						{"git branch --contains", "* master\n  otherbranch\n", nil},
 					})
@@ -56,7 +56,7 @@ var _ = Describe("StatusMgr", func() {
 
 			Context("when git branch command says we're on a detached head", func() {
 				It("falls back to 'git branch --contains'", func() {
-					ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+					ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 						{"git symbolic-ref --short HEAD", "", errors.New("my error")},
 						{"git branch --contains", "* (HEAD detached at 264fc6f5)\n  otherbranch\n", nil},
 					})
@@ -70,7 +70,7 @@ var _ = Describe("StatusMgr", func() {
 
 			Context("when both commands return an error", func() {
 				It("bubbles up error", func() {
-					ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+					ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 						{"git symbolic-ref --short HEAD", "", errors.New("my error")},
 						{"git branch --contains", "", errors.New("my other error")},
 					})

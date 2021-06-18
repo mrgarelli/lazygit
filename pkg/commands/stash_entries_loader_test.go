@@ -18,7 +18,7 @@ var _ = Describe("StashEntriesLoader", func() {
 	BeforeEach(func() {
 		commander = NewFakeCommander()
 
-		mgrCtx := NewFakeMgrCtx(commander, nil)
+		mgrCtx := NewFakeMgrCtx(commander, nil, nil)
 
 		StashEntriesLoader = NewStashEntriesLoader(mgrCtx)
 	})
@@ -27,7 +27,7 @@ var _ = Describe("StashEntriesLoader", func() {
 		Context("not filtering by path", func() {
 			Context("stash entries exist", func() {
 				It("returns stash entries", func() {
-					ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+					ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 						{
 							cmdStr:    "git stash list --pretty='%gs'",
 							outputStr: "WIP on mybranch: 55c6af2 foo\nWIP on master: bb86a3f bar",
@@ -53,7 +53,7 @@ var _ = Describe("StashEntriesLoader", func() {
 
 			Context("no stash entries exist", func() {
 				It("returns empty array", func() {
-					ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+					ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 						{
 							cmdStr:    "git stash list --pretty='%gs'",
 							outputStr: "\n",
@@ -68,7 +68,7 @@ var _ = Describe("StashEntriesLoader", func() {
 
 			Context("error is raised by command", func() {
 				It("returns empty array", func() {
-					ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+					ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 						{
 							cmdStr:    "git stash list --pretty='%gs'",
 							outputStr: "",
@@ -98,7 +98,7 @@ pkg/gui/handlers/sync/push_files/mocks/Gui.go`
 
 			Context("stash entries exist", func() {
 				It("returns stash entries", func() {
-					ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+					ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 						{
 							cmdStr:    "git stash list --name-only",
 							outputStr: output,
@@ -124,7 +124,7 @@ pkg/gui/handlers/sync/push_files/mocks/Gui.go`
 
 			Context("no stash entries exist", func() {
 				It("returns empty array", func() {
-					ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+					ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 						{
 							cmdStr:    "git stash list --name-only",
 							outputStr: "\n",
@@ -140,7 +140,7 @@ pkg/gui/handlers/sync/push_files/mocks/Gui.go`
 			Context("error is raised by command", func() {
 				// not sure if we should actually do this
 				It("falls back to unfiltered search", func() {
-					ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+					ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 						{
 							cmdStr:    "git stash list --name-only",
 							outputStr: "",

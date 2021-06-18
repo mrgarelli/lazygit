@@ -23,7 +23,7 @@ var _ = Describe("CommitsMgr", func() {
 		config = &FakeIGitConfigMgr{}
 		config.ColorArgCalls(func() string { return "always" })
 
-		mgrCtx = NewFakeMgrCtx(commander, config)
+		mgrCtx = NewFakeMgrCtx(commander, config, nil)
 		statusMgr = &FakeIStatusMgr{}
 
 		commitsMgr = NewCommitsMgr(mgrCtx, statusMgr)
@@ -31,7 +31,7 @@ var _ = Describe("CommitsMgr", func() {
 
 	Describe("RewordHead", func() {
 		It("runs expected command", func() {
-			ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+			ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 				{"git commit --allow-empty --amend --only -m \"newName\"", "", nil},
 			})
 
@@ -65,7 +65,7 @@ var _ = Describe("CommitsMgr", func() {
 
 	Describe("GetHeadMessage", func() {
 		It("runs expected command and trims output", func() {
-			ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+			ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 				{"git log -1 --pretty=%s", "blah blah\n", nil},
 			})
 
@@ -76,7 +76,7 @@ var _ = Describe("CommitsMgr", func() {
 		})
 
 		It("returns error if one occurs", func() {
-			ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+			ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 				{"git log -1 --pretty=%s", "", errors.New("my error")},
 			})
 
@@ -89,7 +89,7 @@ var _ = Describe("CommitsMgr", func() {
 
 	Describe("GetMessageFirstLine", func() {
 		It("returns first line", func() {
-			ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+			ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 				{"git show --no-patch --pretty=format:%s abc123", "firstline", nil},
 			})
 
@@ -100,7 +100,7 @@ var _ = Describe("CommitsMgr", func() {
 		})
 
 		It("bubbles up error", func() {
-			ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+			ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 				{"git show --no-patch --pretty=format:%s abc123", "", errors.New("my error")},
 			})
 
@@ -113,7 +113,7 @@ var _ = Describe("CommitsMgr", func() {
 
 	Describe("AmendHead", func() {
 		It("runs command", func() {
-			ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+			ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 				{"git commit --amend --no-edit --allow-empty", "", nil},
 			})
 
@@ -144,7 +144,7 @@ var _ = Describe("CommitsMgr", func() {
 
 	Describe("Revert", func() {
 		It("runs command", func() {
-			ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+			ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 				{"git revert abc123", "", nil},
 			})
 
@@ -155,7 +155,7 @@ var _ = Describe("CommitsMgr", func() {
 
 	Describe("RevertMerge", func() {
 		It("runs command", func() {
-			ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+			ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 				{"git revert abc123 -m 1", "", nil},
 			})
 
@@ -166,7 +166,7 @@ var _ = Describe("CommitsMgr", func() {
 
 	Describe("CreateFixupCommit", func() {
 		It("runs command", func() {
-			ExpectRunWithOutputCalls(commander, []ExpectedRunWithOutputCall{
+			ExpectRunWithOutputCalls(commander, []ExpectedRunCall{
 				{"git commit --fixup=abc123", "", nil},
 			})
 
