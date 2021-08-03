@@ -33,6 +33,12 @@ func (gui *Gui) handleCommitClose() error {
 	return gui.returnFromContext()
 }
 
+func (gui *Gui) newLine() error {
+	gui.Log.Debug("[X] ", "In New Line")
+	gui.Views.CommitMessage.EditNewLine()
+	return nil
+}
+
 func (gui *Gui) handleCommitMessageFocused() error {
 	message := utils.ResolvePlaceholderString(
 		gui.Tr.CommitMessageConfirm,

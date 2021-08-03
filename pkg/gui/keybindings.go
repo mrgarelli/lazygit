@@ -1037,6 +1037,12 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Handler:  gui.handleCommitClose,
 		},
 		{
+			ViewName: "commitMessage",
+			Key:      gocui.KeyAltEnter,
+			Modifier: gocui.ModNone,
+			Handler:  gui.newLine,
+		},
+		{
 			ViewName: "credentials",
 			Key:      gui.getKey(config.Universal.Confirm),
 			Modifier: gocui.ModNone,
