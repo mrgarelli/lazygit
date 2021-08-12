@@ -109,3 +109,69 @@ func TestGitCommandCreateFixupCommit(t *testing.T) {
 		})
 	}
 }
+
+func TestGetMultilineCommitMessage(t *testing.T) {
+	type scenario struct {
+		testName   string
+		sha        string
+		mockCommit string
+		test       func(string, error)
+	}
+
+	scenarios := []scenario{
+		{
+			"valid case",
+			"sha12345",
+			"sha line\nline one\nline two\n",
+			func(actual_commit_message string, err error) {
+				expectedCommit := "line one\nline two"
+				assert.EqualValues(t, expectedCommit, actual_commit_message)
+				assert.NoError(t, err)
+			},
+		},
+	}
+
+	gitCmd := NewDummyGitCommand()
+
+	for _, s := range scenarios {
+		t.Run(s.testName, func(t *testing.T) {
+			gitCmd.OSCommand.Command = func(s1 string, s2 ...string) *exec.Cmd {
+				return secureexec.Command("echo", s.mockCommit)
+			}
+			s.test(gitCmd.GetMultilineCommitMessage(s.sha))
+		})
+	}
+}
+
+func TestGetCommitMessage(t *testing.T) {
+	type scenario struct {
+		testName   string
+		sha        string
+		mockCommit string
+		test       func(string, error)
+	}
+
+	scenarios := []scenario{
+		{
+			"valid case",
+			"sha12345",
+			"sha line\nline one\nline two\n",
+			func(actual_commit_message string, err error) {
+				expectedCommit := "line one\n\nline two"
+				assert.EqualValues(t, expectedCommit, actual_commit_message)
+				assert.NoError(t, err)
+			},
+		},
+	}
+
+	gitCmd := NewDummyGitCommand()
+
+	for _, s := range scenarios {
+		t.Run(s.testName, func(t *testing.T) {
+			gitCmd.OSCommand.Command = func(s1 string, s2 ...string) *exec.Cmd {
+				return secureexec.Command("echo", s.mockCommit)
+			}
+			s.test(gitCmd.GetCommitMessage(s.sha))
+		})
+	}
+}

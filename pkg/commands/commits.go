@@ -40,6 +40,24 @@ func (c *GitCommand) GetHeadCommitMessage() (string, error) {
 	return strings.TrimSpace(message), err
 }
 
+func (c *GitCommand) commitFromSha(commitSha string) (string, error) {
+	cmdStr := "git rev-list --format=%B --max-count=1 " + commitSha
+	messageWithHeader, err := c.OSCommand.RunCommandWithOutput(cmdStr)
+	message := strings.Join(strings.Split(messageWithHeader, "\n")[1:], "\n")
+	return message, err
+}
+
+func (c *GitCommand) GetMultilineCommitMessage(commitSha string) (string, error) {
+	message, err := c.commitFromSha(commitSha)
+	for strings.HasSuffix(message, "\n") {
+		message = strings.TrimSuffix(message, "\n")
+	}
+	for strings.HasPrefix(message, "\n") {
+		message = strings.TrimPrefix(message, "\n")
+	}
+	return message, err
+}
+
 func (c *GitCommand) GetCommitMessage(commitSha string) (string, error) {
 	cmdStr := "git rev-list --format=%B --max-count=1 " + commitSha
 	messageWithHeader, err := c.OSCommand.RunCommandWithOutput(cmdStr)
