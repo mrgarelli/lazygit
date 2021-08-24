@@ -267,16 +267,29 @@ func (gui *Gui) resizeCurrentPopupPanel() error {
 	return nil
 }
 
+func countRune(s string, r rune) int {
+	count := 0
+	for _, c := range s {
+		if c == r {
+			count++
+		}
+	}
+	return count
+}
+
 func (gui *Gui) resizePopupPanel(v *gocui.View) error {
+	gui.Log.Debug("[X] ", "resizePopupPanel")
 	// If the confirmation panel is already displayed, just resize the width,
 	// otherwise continue
-	content := v.Buffer()
-	x0, y0, x1, y1 := gui.getConfirmationPanelDimensions(v.Wrap, content)
-	vx0, vy0, vx1, vy1 := v.Dimensions()
-	if vx0 == x0 && vy0 == y0 && vx1 == x1 && vy1 == y1 {
+	content := v.ViewBuffer()
+	boxHeight := countRune(content, []rune("\n")[0]) + 2
+	gui.Log.Debug("[X] ", boxHeight)
+	x0, y0, x1, _ := gui.getConfirmationPanelDimensions(v.Wrap, content)
+	vx0, vy0, vx1, _ := v.Dimensions()
+	if vx0 == x0 && vy0 == y0 && vx1 == x1 {
 		return nil
 	}
-	_, err := gui.g.SetView(v.Name(), x0, y0, x1, y1, 0)
+	_, err := gui.g.SetView(v.Name(), x0, y0, x1, y0+boxHeight, 0)
 	return err
 }
 

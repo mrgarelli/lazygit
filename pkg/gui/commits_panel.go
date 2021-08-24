@@ -229,7 +229,7 @@ func (gui *Gui) handleRenameCommit() error {
 		return nil
 	}
 
-	message, err := gui.GitCommand.GetCommitMessage(commit.Sha)
+	message, err := gui.GitCommand.GetMultilineCommitMessage(commit.Sha)
 	if err != nil {
 		return gui.surfaceError(err)
 	}

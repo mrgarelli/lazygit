@@ -160,6 +160,7 @@ func (gui *Gui) getConfirmationPanelDimensions(wrap bool, prompt string) (int, i
 		}
 	}
 	panelHeight := gui.getMessageHeight(wrap, prompt, panelWidth)
+	gui.Log.Debug("[X] Message Height: ", panelHeight)
 	if panelHeight > height*3/4 {
 		panelHeight = height * 3 / 4
 	}
@@ -170,6 +171,7 @@ func (gui *Gui) getConfirmationPanelDimensions(wrap bool, prompt string) (int, i
 }
 
 func (gui *Gui) prepareConfirmationPanel(title, prompt string, hasLoader bool, findSuggestionsFunc func(string) []*types.Suggestion) error {
+	gui.Log.Debug("[X] ", "prepareConfirmationPanel")
 	x0, y0, x1, y1 := gui.getConfirmationPanelDimensions(true, prompt)
 	// calling SetView on an existing view returns the same view, so I'm not bothering
 	// to reassign to gui.Views.Confirmation
@@ -206,6 +208,7 @@ func (gui *Gui) prepareConfirmationPanel(title, prompt string, hasLoader bool, f
 
 func (gui *Gui) createPopupPanel(opts createPopupPanelOpts) error {
 	gui.g.Update(func(g *gocui.Gui) error {
+
 		// remove any previous keybindings
 		gui.clearConfirmationViewKeyBindings()
 
